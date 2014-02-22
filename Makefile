@@ -122,7 +122,7 @@ clean :
 # time ./program args +RTS -p -K100M (-k for fixing heap limit)
 
 install:
-	sudo aptitude install -y haskell-platform
+	sudo apt-get install -y haskell-platform
 
 deps:
 	echo "Nothing yet"
