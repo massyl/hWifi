@@ -64,35 +64,46 @@ testWifiToConnects = TestList ["testWifiToConnect1" ~: testWifiToConnect1
                                ,"testWifiToConnect2" ~: testWifiToConnect2]
 
 testConnectToWifiCommand1 :: Test.HUnit.Test
-testConnectToWifiCommand1 = "nmcli con up id tatooine"
+testConnectToWifiCommand1 = (Just "nmcli con up id tatooine")
                             ~=?
-                            connectToWifiCommand "tatooine"
+                            connectToWifiCommand (Just "tatooine")
+
+testConnectToWifiCommand2 :: Test.HUnit.Test
+testConnectToWifiCommand2 = Nothing
+                            ~=?
+                            connectToWifiCommand Nothing
 
 testConnectToWifiCommands :: Test.HUnit.Test
-testConnectToWifiCommands = TestList ["testConnectToWifiCommand1" ~: testConnectToWifiCommand1]
+testConnectToWifiCommands = TestList ["testConnectToWifiCommand1" ~: testConnectToWifiCommand1
+                                     ,"testConnectToWifiCommand2" ~: testConnectToWifiCommand2]
 
 
 testElectWifi1 :: Test.HUnit.Test
-testElectWifi1 = "some-wifi-alone"
+testElectWifi1 = Just "some-wifi-alone"
                  ~=?
                  electWifi ["some-wifi-alone"] Map.empty
 
 testElectWifi2 :: Test.HUnit.Test
-testElectWifi2 = "high-signal"
+testElectWifi2 = Just "high-signal"
                  ~=?
                  electWifi ["high-signal", "low-signal"] (Map.fromList [("high-signal", "100"),
                                                                         ("low-signal", "40")])
 
 testElectWifi3 :: Test.HUnit.Test
-testElectWifi3 = "high-signal"
+testElectWifi3 = Just "high-signal"
                  ~=?
                  electWifi ["high-signal", "medium-signal", "low-signal"] (Map.fromList [("medium-signal", "60"), ("high-signal", "100"), ("low-signal", "20"), ("useless-signal", "40")])
 
+testElectWifi4 :: Test.HUnit.Test
+testElectWifi4 = Nothing
+                 ~=?
+                 electWifi [] (Map.fromList [("medium-signal", "60"), ("high-signal", "100"), ("low-signal", "20"), ("useless-signal", "40")])
 
 testElectWifis :: Test.HUnit.Test
 testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1
                           ,"testElectWifi2" ~: testElectWifi2
-                          ,"testElectWifi3" ~: testElectWifi3]
+                          ,"testElectWifi3" ~: testElectWifi3
+                          ,"testElectWifi4" ~: testElectWifi4]
 
 -- Full tests
 tests :: Test.HUnit.Test

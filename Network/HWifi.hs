@@ -22,17 +22,18 @@ import qualified Data.Map as Map
 import Data.Function (on)
 import Data.List (sortBy)
 
-commandListWifiAutoconnect :: String
-commandListWifiAutoconnect = "nmcli --terse --fields ssid,signal dev wifi"
+commandListWifiAutoconnect :: Maybe String
+commandListWifiAutoconnect = Just "nmcli --terse --fields ssid,signal dev wifi"
 
-commandScanWifi :: String
-commandScanWifi = "nmcli --terse --fields name con list"
+commandScanWifi :: Maybe String
+commandScanWifi = Just "nmcli --terse --fields name con list"
 
 command :: String -> [String]
 command = words
 
-run :: String -> IO [String]
-run fullCommand =
+run :: Maybe String -> IO [String]
+run Nothing            = return []
+run (Just fullCommand) =
   do result <- readProcess comm args []
      return $ lines result
   where (comm:args) = command fullCommand
@@ -78,16 +79,19 @@ wifiToConnect :: Ord k => [k] -> Map.Map k a -> [k]
 wifiToConnect autoConnectWifis scannedWifis =
   filter (flip Map.member scannedWifis) autoConnectWifis
 
-connectToWifiCommand :: String -> String
-connectToWifiCommand wifi = "nmcli con up id " ++ wifi
+connectToWifiCommand :: Maybe String -> Maybe String
+connectToWifiCommand Nothing     = Nothing
+connectToWifiCommand (Just wifi) = Just $ "nmcli con up id " ++ wifi
 
 -- | elect wifi according to signal's power (the more powerful is elected)
-electWifi :: [String] -> Map.Map String String -> String
-electWifi [w] _ = w
+electWifi :: [String] -> Map.Map String String -> Maybe String
+electWifi []    _            = Nothing
+electWifi [w]   _            = Just w
 electWifi wifis scannedWifis =
-  (fst . head . sortBy (compare `on` snd) . map filteredWifiCouple) wifis
-  where filteredWifiCouple wifi = (wifi, w)
-          where Just w = Map.lookup wifi scannedWifis
+  let filteredWifiCouple wifi = (wifi, w) where Just w = Map.lookup wifi scannedWifis in
+  case map filteredWifiCouple wifis of
+    []            -> Nothing
+    filteredWifis -> Just $ (fst . head . sortBy (compare `on` snd)) filteredWifis
 
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
