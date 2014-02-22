@@ -9,6 +9,7 @@ module Network.HWifi where
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
 -- Portability :  portable
+-- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
 --
 -- A simple module to deal with wifi connections.
 -- At the moment, only connection to a wifi with autoconnect policy.
