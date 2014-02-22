@@ -135,3 +135,6 @@ sandbox-delete:
 
 cabal-init:
 	cabal init
+
+run:
+	runhaskell Network/Wifi.hs
