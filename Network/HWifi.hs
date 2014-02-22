@@ -96,12 +96,16 @@ electWifi wifis scannedWifis =
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
 main = do scannedWifis <- scanWifi
+          putStrLn "Scanned wifi: "
+          mapM_ putStrLn $ (map (("- "++) . fst) . Map.toList) scannedWifis
+          putStrLn "\nElect the most powerful wifi signal."
           autoConnectWifis <- autoConnectWifi
           electedWifi <- return $ (flip electWifi scannedWifis . wifiToConnect autoConnectWifis) scannedWifis
+          putStrLn "\nConnection if possible."
           (run . connectToWifiCommand) electedWifi
-          case electedWifi of
-            Nothing   -> putStrLn $ "No known wifi!"
-            Just wifi -> putStrLn $ "Successfully connected to wifi '" ++ wifi ++ "'!"
+          putStrLn (case electedWifi of
+                       Nothing   -> "\nNo known wifi!"
+                       Just wifi -> "\nSuccessfully connected to wifi '" ++ wifi ++ "'!")
 
 -- *Network.HWifi> main
 -- Successfully connected to wifi 'some-ssid-wifi'!
