@@ -97,5 +97,11 @@ electWifi wifis scannedWifis =
 main :: IO ()
 main = do scannedWifis <- scanWifi
           autoConnectWifis <- autoConnectWifi
-          (run . connectToWifiCommand . flip electWifi scannedWifis . wifiToConnect autoConnectWifis) scannedWifis
-          putStrLn $ "Connecting to wifi done!"
+          electedWifi <- return $ (flip electWifi scannedWifis . wifiToConnect autoConnectWifis) scannedWifis
+          (run . connectToWifiCommand) electedWifi
+          case electedWifi of
+            Nothing   -> putStrLn $ "No known wifi!"
+            Just wifi -> putStrLn $ "Successfully connected to wifi '" ++ wifi ++ "'!"
+
+-- *Network.HWifi> main
+-- Successfully connected to wifi 'some-ssid-wifi'!
