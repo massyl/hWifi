@@ -138,3 +138,6 @@ cabal-init:
 
 run:
 	runhaskell Network/HWifi.hs
+
+tests:
+	runhaskell HWifiTests.hs
