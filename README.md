@@ -18,6 +18,20 @@ Embedding this in a script:
 runhaskell Network/Wifi.hs
 ```
 
+Possible output:
+
+``` txt
+Scanned wifi: 
+- some-ssid
+- some-other-ssid
+
+Elect the most powerful wifi signal.
+
+Connection if possible.
+
+Successfully connected to wifi 'some-other-ssid'!
+```
+
 # Pre-requisite
 
 ## Packages

@@ -108,4 +108,12 @@ main = do scannedWifis <- scanWifi
                        Just wifi -> "\nSuccessfully connected to wifi '" ++ wifi ++ "'!")
 
 -- *Network.HWifi> main
--- Successfully connected to wifi 'some-ssid-wifi'!
+-- Scanned wifi:
+-- - Livebox-0ff6
+-- - tatooine
+
+-- Elect the most powerful wifi signal.
+
+-- Connection if possible.
+
+-- Successfully connected to wifi 'tatooine'!
