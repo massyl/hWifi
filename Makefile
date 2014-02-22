@@ -137,4 +137,4 @@ cabal-init:
 	cabal init
 
 run:
-	runhaskell Network/Wifi.hs
+	runhaskell Network/HWifi.hs

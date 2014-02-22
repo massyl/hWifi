@@ -1,6 +1,6 @@
-module WifiTests where
+module HWifiTests where
 
-import Wifi (command, cleanString, sliceSSIDSignal, sliceSSIDSignals, wifiToConnect, connectToWifiCommand, electWifi)
+import Network.HWifi (command, cleanString, sliceSSIDSignal, sliceSSIDSignals, wifiToConnect, connectToWifiCommand, electWifi)
 import Test.HUnit
 import qualified Data.Map as Map
 

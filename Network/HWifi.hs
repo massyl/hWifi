@@ -1,8 +1,8 @@
-module Wifi where
+module Network.HWifi where
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Wifi
+-- Module      :  Network.HWifi
 -- Copyright   :  (c) Commiters
 -- License     :  The same as `nmcli` - http://manpages.ubuntu.com/manpages/maverick/man1/nmcli.1.html
 --
@@ -13,7 +13,7 @@ module Wifi where
 -- A simple module to deal with wifi connections.
 -- At the moment, only connection to a wifi with autoconnect policy.
 --
--- Use: runhaskell Network/Wifi.hs
+-- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
 
