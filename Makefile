@@ -121,14 +121,17 @@ clean :
 
 # time ./program args +RTS -p -K100M (-k for fixing heap limit)
 
-init:
-	cabal sandbox init
+install:
+	sudo aptitude install -y haskell-platform
 
 deps:
 	echo "Nothing yet"
 
-install:
-	sudo aptitude install -y haskell-platform
+sandbox-init:
+	cabal sandbox init
+
+sandbox-delete:
+	cabal sandbox delete
 
 cabal-init:
 	cabal init
