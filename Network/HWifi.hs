@@ -6,7 +6,7 @@ module Network.HWifi where
 -- Copyright   :  (c) Commiters
 -- License     :  The same as `nmcli` - http://manpages.ubuntu.com/manpages/maverick/man1/nmcli.1.html
 --
--- Maintainer  :  ardumont, massyl
+-- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
 -- Portability :  portable
 --
