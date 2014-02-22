@@ -16,7 +16,6 @@ module Network.HWifi where
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
-
 -- cabal module `process`
 import System.Process
 import qualified Data.Map as Map
