@@ -1,5 +1,5 @@
-Network.Wifi
-============
+Wifi.hs
+=======
 
 A simple wifi module haskell to help in connecting to auto-connect Wifi.
 
@@ -15,7 +15,7 @@ This will:
 Embedding this in a script:
 
 ```sh
-runhaskell Network/Wifi.hs
+runhaskell Wifi.hs
 ```
 
 # Pre-requisite
