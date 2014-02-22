@@ -1,5 +1,5 @@
-Network.Wifi
-============
+hWifi [![Build Status](https://travis-ci.org/ardumont/hWifi.png?branch=master)](https://travis-ci.org/ardumont/hWifi)
+=====================================================================================================================
 
 A simple wifi module haskell to help in connecting to auto-connect Wifi.
 
