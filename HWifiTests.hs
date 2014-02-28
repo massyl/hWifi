@@ -1,7 +1,17 @@
 module HWifiTests where
 
-import Network.HWifi (command, cleanString, sliceSSIDSignal, sliceSSIDSignals, filterKnownWifi, commandScanWifi, commandConnectToWifi, electWifi)
+import Network.HWifi (command, cleanString, sliceSSIDSignal, sliceSSIDSignals, filterKnownWifi, commandScanWifi, commandListWifiAutoConnect, commandConnectToWifi, electWifi)
 import Test.HUnit
+
+testCommandScanWifi :: Test.HUnit.Test
+testCommandScanWifi = Just "nmcli --terse --fields ssid,signal dev wifi"
+                      ~=?
+                      commandScanWifi
+
+testCommandListWifiAutoConnect :: Test.HUnit.Test
+testCommandListWifiAutoConnect = Just "nmcli --terse --fields name con list"
+                                 ~=?
+                                 commandListWifiAutoConnect
 
 testCommand1 :: Test.HUnit.Test
 testCommand1 = ["nmcli","con","list"] ~=? command "nmcli con list"
@@ -105,7 +115,9 @@ testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1
 
 -- Full tests
 tests :: Test.HUnit.Test
-tests = TestList [testCommands
+tests = TestList [testCommandScanWifi
+                  ,testCommandListWifiAutoConnect
+                  ,testCommands
                   ,testCleanStrings
                   ,testSliceSSIDSignals
                   ,testSliceSSIDSignalss
