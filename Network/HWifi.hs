@@ -26,8 +26,8 @@ import Control.Arrow
 commandScanWifi :: Maybe String
 commandScanWifi = Just "nmcli --terse --fields ssid,signal dev wifi"
 
-commandScanWifiAutoConnect :: Maybe String
-commandScanWifiAutoConnect = Just "nmcli --terse --fields name con list"
+commandListWifiAutoConnect :: Maybe String
+commandListWifiAutoConnect = Just "nmcli --terse --fields name con list"
 
 command :: String -> [String]
 command = words
@@ -68,21 +68,21 @@ scanWifi =  map sliceSSIDSignal <$> run commandScanWifi
 -- *Wifi> scanWifi
 -- fromList [("Livebox-0ff6","42"),("freewifi","75")]
 
-autoConnectWifi :: IO [String]
-autoConnectWifi = run commandScanWifiAutoConnect
+listWifiAutoConnect :: IO [String]
+listWifiAutoConnect = run commandListWifiAutoConnect
 
--- *Wifi> autoConnectWifi
+-- *Wifi> listWifiAutoConnect
 -- ["dantooine","myrkr","tatooine"]
 
 -- | Filter the list of wifis the machine (in its current setup) can autoconnect to
-wifiToConnect :: [String] -> [(String,String)] -> [(String,String)]
-wifiToConnect autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
+filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
+filterKnownWifi autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
 
-connectToWifiCommand :: Maybe String -> Maybe String
-connectToWifiCommand Nothing     = Nothing
-connectToWifiCommand (Just wifi) = Just $ "nmcli con up id " ++ wifi
+commandConnectToWifi :: Maybe String -> Maybe String
+commandConnectToWifi Nothing     = Nothing
+commandConnectToWifi (Just wifi) = Just $ "nmcli con up id " ++ wifi
 
--- | elect wifi according to signal's power (the more powerful is elected)
+-- | Elect wifi according to signal's power (the more powerful is elected)
 electWifi :: [(String, String)] -> Maybe String
 electWifi []      = Nothing
 electWifi [(w,_)] = Just w
@@ -92,5 +92,5 @@ electWifi wifi    = Just . fst. head . sortBy (compare `on` snd) $ wifi
 main :: IO ()
 main = do
   putStrLn "\nElect the most powerful wifi signal."
-  autoConnectWifis <- autoConnectWifi
-  electWifi . wifiToConnect autoConnectWifis <$> scanWifi >>= run . connectToWifiCommand >> return ()
+  autoConnectWifis <- listWifiAutoConnect
+  electWifi . filterKnownWifi autoConnectWifis <$> scanWifi >>= run . commandConnectToWifi >> return ()
