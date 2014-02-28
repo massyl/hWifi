@@ -52,9 +52,7 @@ cleanString :: String -> String
 cleanString s = if (elem '\'' s) then tail . init $ s else s
 
 sliceSSIDSignal :: String -> (String, String)
-sliceSSIDSignal s =
-  (cleanString ssid, tail signal)
-  where (ssid, signal) = break (== ':') s
+sliceSSIDSignal s = (cleanString ssid, tail signal) where (ssid, signal) = break (== ':') s
 
 sliceSSIDSignals :: [String] -> [(String, String)]
 sliceSSIDSignals = map sliceSSIDSignal
