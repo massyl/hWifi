@@ -23,15 +23,19 @@ import Data.Functor
 import Data.List (sortBy)
 import Control.Arrow
 
+-- | Command to scan the current wifi
 commandScanWifi :: Maybe String
 commandScanWifi = Just "nmcli --terse --fields ssid,signal dev wifi"
 
+-- | Command to list the wifi the computer can currently auto connect to
 commandListWifiAutoConnect :: Maybe String
 commandListWifiAutoConnect = Just "nmcli --terse --fields name con list"
 
+-- | Function to split command into list of strings
 command :: String -> [String]
 command = words
 
+-- | Run a command and displays the output in list of strings
 run :: Maybe String -> IO [String]
 run Nothing            = return []
 run (Just fullCommand) =
@@ -48,21 +52,26 @@ run (Just fullCommand) =
 -- *Wifi> run "nmcli --terse --fields ssid,signal dev wifi"
 -- ["'Livebox-0ff6':42","'tatooine':72"]
 
+-- | Utility function to trim the ' in a string
 cleanString :: String -> String
 cleanString s = if (elem '\'' s) then tail . init $ s else s
 
+-- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
 sliceSSIDSignal :: String -> (String, String)
 sliceSSIDSignal s = (cleanString ssid, tail signal) where (ssid, signal) = break (== ':') s
 
+-- | Given a list of signals, return the list of couple (wifi, signal)
 sliceSSIDSignals :: [String] -> [(String, String)]
 sliceSSIDSignals = map sliceSSIDSignal
 
+-- | Scan the proximity wifi
 scanWifi :: IO [(String, String)]
 scanWifi =  map sliceSSIDSignal <$> run commandScanWifi
 
 -- *Wifi> scanWifi
 -- fromList [("Livebox-0ff6","42"),("freewifi","75")]
 
+-- | List the current wifi the computer can connect to
 listWifiAutoConnect :: IO [String]
 listWifiAutoConnect = run commandListWifiAutoConnect
 
@@ -73,6 +82,7 @@ listWifiAutoConnect = run commandListWifiAutoConnect
 filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
 filterKnownWifi autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
 
+-- | Given a wifi, execute the command to connect to a wifi
 commandConnectToWifi :: Maybe String -> Maybe String
 commandConnectToWifi Nothing     = Nothing
 commandConnectToWifi (Just wifi) = Just $ "nmcli con up id " ++ wifi
