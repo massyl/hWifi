@@ -12,7 +12,7 @@ module Network.HWifi where
 -- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
 --
 -- A simple module to deal with wifi connections.
--- At the moment, only connection to a wifi with autoconnect policy.
+-- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
 --
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ commandConnectToWifi :: Maybe String -> Maybe String
 commandConnectToWifi Nothing     = Nothing
 commandConnectToWifi (Just wifi) = Just $ "nmcli con up id " ++ wifi
 
--- | Elect wifi according to signal's power (the more powerful is elected)
+-- | Elect wifi according to signal's power (the most powerful is elected)
 electWifi :: [(String, String)] -> Maybe String
 electWifi []      = Nothing
 electWifi [(w,_)] = Just w
