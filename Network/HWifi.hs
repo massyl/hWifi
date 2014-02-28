@@ -78,14 +78,14 @@ autoConnectWifi = run commandScanWifiAutoConnect
 wifiToConnect :: [String] -> [(String,String)] -> [(String,String)]
 --wifiToConnect autoConnectWifis scannedWifis = map (filter (map elem autoConnectWifis) . fst) scannedWifis
 --wifiToConnect autoConnectWifis scannedWifis = filter (`elem` autoConnectWifis . fst) scannedWifis
-wifiToConnect autoConnectWifis = filter $ (\(_, b)-> b == True) . second (`elem` autoConnectWifis)
+wifiToConnect autoConnectWifis = filter $ (\(a, _)-> a == True) . first (`elem` autoConnectWifis)
 
 connectToWifiCommand :: Maybe String -> Maybe String
-connectToWifiCommand Nothing          = Nothing
+connectToWifiCommand Nothing     = Nothing
 connectToWifiCommand (Just wifi) = Just $ "nmcli con up id " ++ wifi
 
 -- | elect wifi according to signal's power (the more powerful is elected)
-electWifi :: [(String,String)] -> Maybe String
+electWifi :: [(String, String)] -> Maybe String
 electWifi []      = Nothing
 electWifi [(w,_)] = Just w
 electWifi wifi    = Just . fst. head . sortBy (compare `on` snd) $ wifi
