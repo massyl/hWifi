@@ -49,10 +49,7 @@ run (Just fullCommand) =
 -- ["'Livebox-0ff6':42","'tatooine':72"]
 
 cleanString :: String -> String
-cleanString s =
-  if (elem '\'' s)
-  then tail . init $ s
-  else s
+cleanString s = if (elem '\'' s) then tail . init $ s else s
 
 sliceSSIDSignal :: String -> (String, String)
 sliceSSIDSignal s =
