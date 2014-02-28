@@ -76,9 +76,7 @@ autoConnectWifi = run commandScanWifiAutoConnect
 
 -- | Filter the list of wifis the machine (in its current setup) can autoconnect to
 wifiToConnect :: [String] -> [(String,String)] -> [(String,String)]
---wifiToConnect autoConnectWifis scannedWifis = map (filter (map elem autoConnectWifis) . fst) scannedWifis
---wifiToConnect autoConnectWifis scannedWifis = filter (`elem` autoConnectWifis . fst) scannedWifis
-wifiToConnect autoConnectWifis = filter $ (\(a, _)-> a == True) . first (`elem` autoConnectWifis)
+wifiToConnect autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
 
 connectToWifiCommand :: Maybe String -> Maybe String
 connectToWifiCommand Nothing     = Nothing
