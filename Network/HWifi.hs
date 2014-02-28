@@ -18,15 +18,16 @@ module Network.HWifi where
 -----------------------------------------------------------------------------
 
 import System.Process
-import qualified Data.Map as Map
 import Data.Function (on)
+import Data.Functor
 import Data.List (sortBy)
-
-commandListWifiAutoconnect :: Maybe String
-commandListWifiAutoconnect = Just "nmcli --terse --fields ssid,signal dev wifi"
+import Control.Arrow
 
 commandScanWifi :: Maybe String
-commandScanWifi = Just "nmcli --terse --fields name con list"
+commandScanWifi = Just "nmcli --terse --fields ssid,signal dev wifi"
+
+commandScanWifiAutoConnect :: Maybe String
+commandScanWifiAutoConnect = Just "nmcli --terse --fields name con list"
 
 command :: String -> [String]
 command = words
@@ -61,59 +62,37 @@ sliceSSIDSignal s =
 sliceSSIDSignals :: [String] -> [(String, String)]
 sliceSSIDSignals = map sliceSSIDSignal
 
-scanWifi :: IO (Map.Map String String)
-scanWifi =
-  fmap (Map.fromList . map sliceSSIDSignal) $ run commandListWifiAutoconnect
+scanWifi :: IO [(String, String)]
+scanWifi =  map sliceSSIDSignal <$> run commandScanWifi
 
 -- *Wifi> scanWifi
 -- fromList [("Livebox-0ff6","42"),("freewifi","75")]
 
 autoConnectWifi :: IO [String]
-autoConnectWifi = run commandScanWifi
+autoConnectWifi = run commandScanWifiAutoConnect
 
 -- *Wifi> autoConnectWifi
 -- ["dantooine","myrkr","tatooine"]
 
 -- | Filter the list of wifis the machine (in its current setup) can autoconnect to
-wifiToConnect :: Ord k => [k] -> Map.Map k a -> [k]
-wifiToConnect autoConnectWifis scannedWifis =
-  filter (flip Map.member scannedWifis) autoConnectWifis
+wifiToConnect :: [String] -> [(String,String)] -> [(String,String)]
+--wifiToConnect autoConnectWifis scannedWifis = map (filter (map elem autoConnectWifis) . fst) scannedWifis
+--wifiToConnect autoConnectWifis scannedWifis = filter (`elem` autoConnectWifis . fst) scannedWifis
+wifiToConnect autoConnectWifis = filter $ (\(_, b)-> b == True) . second (`elem` autoConnectWifis)
 
 connectToWifiCommand :: Maybe String -> Maybe String
-connectToWifiCommand Nothing     = Nothing
+connectToWifiCommand Nothing          = Nothing
 connectToWifiCommand (Just wifi) = Just $ "nmcli con up id " ++ wifi
 
 -- | elect wifi according to signal's power (the more powerful is elected)
-electWifi :: [String] -> Map.Map String String -> Maybe String
-electWifi []    _            = Nothing
-electWifi [w]   _            = Just w
-electWifi wifis scannedWifis =
-  let filteredWifiCouple wifi = (wifi, w) where Just w = Map.lookup wifi scannedWifis in
-  case map filteredWifiCouple wifis of
-    []            -> Nothing
-    filteredWifis -> Just $ (fst . head . sortBy (compare `on` snd)) filteredWifis
+electWifi :: [(String,String)] -> Maybe String
+electWifi []      = Nothing
+electWifi [(w,_)] = Just w
+electWifi wifi    = Just . fst. head . sortBy (compare `on` snd) $ wifi
 
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
-main = do scannedWifis <- scanWifi
-          putStrLn "Scanned wifi: "
-          mapM_ putStrLn $ (map (("- "++) . fst) . Map.toList) scannedWifis
-          putStrLn "\nElect the most powerful wifi signal."
-          autoConnectWifis <- autoConnectWifi
-          electedWifi <- return $ (flip electWifi scannedWifis . wifiToConnect autoConnectWifis) scannedWifis
-          putStrLn "\nConnection if possible."
-          (run . connectToWifiCommand) electedWifi
-          putStrLn (case electedWifi of
-                       Nothing   -> "\nNo known wifi!"
-                       Just wifi -> "\nSuccessfully connected to wifi '" ++ wifi ++ "'!")
-
--- *Network.HWifi> main
--- Scanned wifi:
--- - Livebox-0ff6
--- - tatooine
-
--- Elect the most powerful wifi signal.
-
--- Connection if possible.
-
--- Successfully connected to wifi 'tatooine'!
+main = do
+  putStrLn "\nElect the most powerful wifi signal."
+  autoConnectWifis <- autoConnectWifi
+  electWifi . wifiToConnect autoConnectWifis <$> scanWifi >>= run . connectToWifiCommand >> return ()
