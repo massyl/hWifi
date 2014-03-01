@@ -93,9 +93,25 @@ electWifi []      = Nothing
 electWifi [(w,_)] = Just w
 electWifi wifi    = Just . fst. head . sortBy (compare `on` snd) $ wifi
 
+connectToWifiMsg :: Maybe String -> String
+connectToWifiMsg Nothing     = "No connection possible!"
+connectToWifiMsg (Just wifi) = "Connection to wifi '" ++ wifi ++ "'..."
+
+connectedWifiMsg :: Maybe String -> String
+connectedWifiMsg Nothing     = "No known wifi!"
+connectedWifiMsg (Just wifi) = "Connection to wifi '" ++ wifi ++ "' successfully established!"
+
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
 main = do
-  putStrLn "\nElect the most powerful wifi signal."
+  scannedWifis <- scanWifi
+  putStrLn "Scanned wifi: "
+  mapM_ putStrLn $ map (("- "++) . fst) scannedWifis
   autoConnectWifis <- listWifiAutoConnect
-  electWifi . filterKnownWifi autoConnectWifis <$> scanWifi >>= run . commandConnectToWifi >> return ()
+  putStrLn "\nAuto-connect wifi: "
+  mapM_ putStrLn $ map ("- "++) autoConnectWifis
+  putStrLn "\nElect the most powerful wifi signal."
+  electedWifi <- return $ (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
+  putStrLn (connectToWifiMsg electedWifi)
+  (run . commandConnectToWifi) electedWifi
+  putStrLn (connectedWifiMsg electedWifi)
