@@ -1,8 +1,17 @@
 module HWifiTests where
 
-import Network.HWifi (command, cleanString, sliceSSIDSignal, sliceSSIDSignals, wifiToConnect, connectToWifiCommand, electWifi)
+import Network.HWifi (command, cleanString, sliceSSIDSignal, sliceSSIDSignals, filterKnownWifi, commandScanWifi, commandListWifiAutoConnect, commandConnectToWifi, electWifi)
 import Test.HUnit
-import qualified Data.Map as Map
+
+testCommandScanWifi :: Test.HUnit.Test
+testCommandScanWifi = Just "nmcli --terse --fields ssid,signal dev wifi"
+                      ~=?
+                      commandScanWifi
+
+testCommandListWifiAutoConnect :: Test.HUnit.Test
+testCommandListWifiAutoConnect = Just "nmcli --terse --fields name con list"
+                                 ~=?
+                                 commandListWifiAutoConnect
 
 testCommand1 :: Test.HUnit.Test
 testCommand1 = ["nmcli","con","list"] ~=? command "nmcli con list"
@@ -50,14 +59,14 @@ testSliceSSIDSignalss :: Test.HUnit.Test
 testSliceSSIDSignalss = TestList ["testSliceSSIDSignals1" ~: testSliceSSIDSignals1]
 
 testWifiToConnect1 :: Test.HUnit.Test
-testWifiToConnect1 = ["tatooine"]
+testWifiToConnect1 = [("tatooine", "67")]
                      ~=?
-                     wifiToConnect ["AndroidAP-tony","myrkr","tatooine"] (Map.fromList [("Livebox-0ff6","42"),("tatooine","67")])
+                     filterKnownWifi ["AndroidAP-tony","myrkr","tatooine"] [("Livebox-0ff6","42"),("tatooine","67")]
 
 testWifiToConnect2 :: Test.HUnit.Test
-testWifiToConnect2 = ["dantooine", "tatooine"]
+testWifiToConnect2 = [("tatooine", "67"), ("dantooine", "72")]
                      ~=?
-                     wifiToConnect ["myrkr","dantooine","tatooine"] (Map.fromList [("Livebox-0ff6","42"),("tatooine","67"),("dantooine", "72")])
+                     filterKnownWifi ["myrkr","dantooine","tatooine"] [("Livebox-0ff6","42"),("tatooine","67"),("dantooine", "72")]
 
 testWifiToConnects :: Test.HUnit.Test
 testWifiToConnects = TestList ["testWifiToConnect1" ~: testWifiToConnect1
@@ -66,12 +75,12 @@ testWifiToConnects = TestList ["testWifiToConnect1" ~: testWifiToConnect1
 testConnectToWifiCommand1 :: Test.HUnit.Test
 testConnectToWifiCommand1 = (Just "nmcli con up id tatooine")
                             ~=?
-                            connectToWifiCommand (Just "tatooine")
+                            commandConnectToWifi (Just "tatooine")
 
 testConnectToWifiCommand2 :: Test.HUnit.Test
 testConnectToWifiCommand2 = Nothing
                             ~=?
-                            connectToWifiCommand Nothing
+                            commandConnectToWifi Nothing
 
 testConnectToWifiCommands :: Test.HUnit.Test
 testConnectToWifiCommands = TestList ["testConnectToWifiCommand1" ~: testConnectToWifiCommand1
@@ -81,23 +90,22 @@ testConnectToWifiCommands = TestList ["testConnectToWifiCommand1" ~: testConnect
 testElectWifi1 :: Test.HUnit.Test
 testElectWifi1 = Just "some-wifi-alone"
                  ~=?
-                 electWifi ["some-wifi-alone"] Map.empty
+                 electWifi [("some-wifi-alone", "100")]
 
 testElectWifi2 :: Test.HUnit.Test
 testElectWifi2 = Just "high-signal"
                  ~=?
-                 electWifi ["high-signal", "low-signal"] (Map.fromList [("high-signal", "100"),
-                                                                        ("low-signal", "40")])
+                 electWifi [("high-signal", "100"), ("low-signal", "40")]
 
 testElectWifi3 :: Test.HUnit.Test
 testElectWifi3 = Just "high-signal"
                  ~=?
-                 electWifi ["high-signal", "medium-signal", "low-signal"] (Map.fromList [("medium-signal", "60"), ("high-signal", "100"), ("low-signal", "20"), ("useless-signal", "40")])
+                 electWifi [("medium-signal", "60"), ("high-signal", "100"), ("low-signal", "20"), ("useless-signal", "40")]
 
 testElectWifi4 :: Test.HUnit.Test
 testElectWifi4 = Nothing
                  ~=?
-                 electWifi [] (Map.fromList [("medium-signal", "60"), ("high-signal", "100"), ("low-signal", "20"), ("useless-signal", "40")])
+                 electWifi []
 
 testElectWifis :: Test.HUnit.Test
 testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1
@@ -107,7 +115,9 @@ testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1
 
 -- Full tests
 tests :: Test.HUnit.Test
-tests = TestList [testCommands
+tests = TestList [testCommandScanWifi
+                  ,testCommandListWifiAutoConnect
+                  ,testCommands
                   ,testCleanStrings
                   ,testSliceSSIDSignals
                   ,testSliceSSIDSignalss

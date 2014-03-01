@@ -12,25 +12,30 @@ module Network.HWifi where
 -- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
 --
 -- A simple module to deal with wifi connections.
--- At the moment, only connection to a wifi with autoconnect policy.
+-- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
 --
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
 import System.Process
-import qualified Data.Map as Map
 import Data.Function (on)
+import Data.Functor
 import Data.List (sortBy)
+import Control.Arrow
 
-commandListWifiAutoconnect :: Maybe String
-commandListWifiAutoconnect = Just "nmcli --terse --fields ssid,signal dev wifi"
-
+-- | Command to scan the current wifi
 commandScanWifi :: Maybe String
-commandScanWifi = Just "nmcli --terse --fields name con list"
+commandScanWifi = Just "nmcli --terse --fields ssid,signal dev wifi"
 
+-- | Command to list the wifi the computer can currently auto connect to
+commandListWifiAutoConnect :: Maybe String
+commandListWifiAutoConnect = Just "nmcli --terse --fields name con list"
+
+-- | Function to split command into list of strings
 command :: String -> [String]
 command = words
 
+-- | Run a command and displays the output in list of strings
 run :: Maybe String -> IO [String]
 run Nothing            = return []
 run (Just fullCommand) =
@@ -47,73 +52,66 @@ run (Just fullCommand) =
 -- *Wifi> run "nmcli --terse --fields ssid,signal dev wifi"
 -- ["'Livebox-0ff6':42","'tatooine':72"]
 
+-- | Utility function to trim the ' in a string
 cleanString :: String -> String
-cleanString s =
-  if (elem '\'' s)
-  then tail . init $ s
-  else s
+cleanString s = if (elem '\'' s) then tail . init $ s else s
 
+-- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
 sliceSSIDSignal :: String -> (String, String)
-sliceSSIDSignal s =
-  (cleanString ssid, tail signal)
-  where (ssid, signal) = break (== ':') s
+sliceSSIDSignal s = (cleanString ssid, tail signal) where (ssid, signal) = break (== ':') s
 
+-- | Given a list of signals, return the list of couple (wifi, signal)
 sliceSSIDSignals :: [String] -> [(String, String)]
 sliceSSIDSignals = map sliceSSIDSignal
 
-scanWifi :: IO (Map.Map String String)
-scanWifi =
-  fmap (Map.fromList . map sliceSSIDSignal) $ run commandListWifiAutoconnect
+-- | Scan the proximity wifi
+scanWifi :: IO [(String, String)]
+scanWifi =  map sliceSSIDSignal <$> run commandScanWifi
 
 -- *Wifi> scanWifi
 -- fromList [("Livebox-0ff6","42"),("freewifi","75")]
 
-autoConnectWifi :: IO [String]
-autoConnectWifi = run commandScanWifi
+-- | List the current wifi the computer can connect to
+listWifiAutoConnect :: IO [String]
+listWifiAutoConnect = run commandListWifiAutoConnect
 
--- *Wifi> autoConnectWifi
+-- *Wifi> listWifiAutoConnect
 -- ["dantooine","myrkr","tatooine"]
 
 -- | Filter the list of wifis the machine (in its current setup) can autoconnect to
-wifiToConnect :: Ord k => [k] -> Map.Map k a -> [k]
-wifiToConnect autoConnectWifis scannedWifis =
-  filter (flip Map.member scannedWifis) autoConnectWifis
+filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
+filterKnownWifi autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
 
-connectToWifiCommand :: Maybe String -> Maybe String
-connectToWifiCommand Nothing     = Nothing
-connectToWifiCommand (Just wifi) = Just $ "nmcli con up id " ++ wifi
+-- | Given a wifi, execute the command to connect to a wifi
+commandConnectToWifi :: Maybe String -> Maybe String
+commandConnectToWifi Nothing     = Nothing
+commandConnectToWifi (Just wifi) = Just $ "nmcli con up id " ++ wifi
 
--- | elect wifi according to signal's power (the more powerful is elected)
-electWifi :: [String] -> Map.Map String String -> Maybe String
-electWifi []    _            = Nothing
-electWifi [w]   _            = Just w
-electWifi wifis scannedWifis =
-  let filteredWifiCouple wifi = (wifi, w) where Just w = Map.lookup wifi scannedWifis in
-  case map filteredWifiCouple wifis of
-    []            -> Nothing
-    filteredWifis -> Just $ (fst . head . sortBy (compare `on` snd)) filteredWifis
+-- | Elect wifi according to signal's power (the most powerful is elected)
+electWifi :: [(String, String)] -> Maybe String
+electWifi []      = Nothing
+electWifi [(w,_)] = Just w
+electWifi wifi    = Just . fst. head . sortBy (compare `on` snd) $ wifi
+
+connectToWifiMsg :: Maybe String -> String
+connectToWifiMsg Nothing     = "No connection possible!"
+connectToWifiMsg (Just wifi) = "Connection to wifi '" ++ wifi ++ "'..."
+
+connectedWifiMsg :: Maybe String -> String
+connectedWifiMsg Nothing     = "No known wifi!"
+connectedWifiMsg (Just wifi) = "Connection to wifi '" ++ wifi ++ "' successfully established!"
 
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
-main = do scannedWifis <- scanWifi
-          putStrLn "Scanned wifi: "
-          mapM_ putStrLn $ (map (("- "++) . fst) . Map.toList) scannedWifis
-          putStrLn "\nElect the most powerful wifi signal."
-          autoConnectWifis <- autoConnectWifi
-          electedWifi <- return $ (flip electWifi scannedWifis . wifiToConnect autoConnectWifis) scannedWifis
-          putStrLn "\nConnection if possible."
-          (run . connectToWifiCommand) electedWifi
-          putStrLn (case electedWifi of
-                       Nothing   -> "\nNo known wifi!"
-                       Just wifi -> "\nSuccessfully connected to wifi '" ++ wifi ++ "'!")
-
--- *Network.HWifi> main
--- Scanned wifi:
--- - Livebox-0ff6
--- - tatooine
-
--- Elect the most powerful wifi signal.
-
--- Connection if possible.
-
--- Successfully connected to wifi 'tatooine'!
+main = do
+  scannedWifis <- scanWifi
+  putStrLn "Scanned wifi: "
+  mapM_ putStrLn $ map (("- "++) . fst) scannedWifis
+  autoConnectWifis <- listWifiAutoConnect
+  putStrLn "\nAuto-connect wifi: "
+  mapM_ putStrLn $ map ("- "++) autoConnectWifis
+  putStrLn "\nElect the most powerful wifi signal."
+  electedWifi <- return $ (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
+  putStrLn (connectToWifiMsg electedWifi)
+  (run . commandConnectToWifi) electedWifi
+  putStrLn (connectedWifiMsg electedWifi)
