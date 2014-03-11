@@ -4,12 +4,12 @@ import Network.HWifi (command, cleanString, sliceSSIDSignal, sliceSSIDSignals, f
 import Test.HUnit
 
 testCommandScanWifi :: Test.HUnit.Test
-testCommandScanWifi = Just "nmcli --terse --fields ssid,signal dev wifi"
+testCommandScanWifi = "nmcli --terse --fields ssid,signal dev wifi"
                       ~=?
                       commandScanWifi
 
 testCommandListWifiAutoConnect :: Test.HUnit.Test
-testCommandListWifiAutoConnect = Just "nmcli --terse --fields name con list"
+testCommandListWifiAutoConnect = "nmcli --terse --fields name con list"
                                  ~=?
                                  commandListWifiAutoConnect
 
@@ -73,14 +73,14 @@ testWifiToConnects = TestList ["testWifiToConnect1" ~: testWifiToConnect1
                                ,"testWifiToConnect2" ~: testWifiToConnect2]
 
 testConnectToWifiCommand1 :: Test.HUnit.Test
-testConnectToWifiCommand1 = (Just "nmcli con up id tatooine")
+testConnectToWifiCommand1 = "nmcli con up id tatooine"
                             ~=?
-                            commandConnectToWifi (Just "tatooine")
+                            commandConnectToWifi ["tatooine"]
 
 testConnectToWifiCommand2 :: Test.HUnit.Test
-testConnectToWifiCommand2 = Nothing
+testConnectToWifiCommand2 = []
                             ~=?
-                            commandConnectToWifi Nothing
+                            commandConnectToWifi []
 
 testConnectToWifiCommands :: Test.HUnit.Test
 testConnectToWifiCommands = TestList ["testConnectToWifiCommand1" ~: testConnectToWifiCommand1
@@ -88,22 +88,22 @@ testConnectToWifiCommands = TestList ["testConnectToWifiCommand1" ~: testConnect
 
 
 testElectWifi1 :: Test.HUnit.Test
-testElectWifi1 = Just "some-wifi-alone"
+testElectWifi1 = ["some-wifi-alone"]
                  ~=?
                  electWifi [("some-wifi-alone", "100")]
 
 testElectWifi2 :: Test.HUnit.Test
-testElectWifi2 = Just "high-signal"
+testElectWifi2 = ["high-signal"]
                  ~=?
                  electWifi [("high-signal", "100"), ("low-signal", "40")]
 
 testElectWifi3 :: Test.HUnit.Test
-testElectWifi3 = Just "high-signal"
+testElectWifi3 = ["high-signal"]
                  ~=?
                  electWifi [("medium-signal", "60"), ("high-signal", "100"), ("low-signal", "20"), ("useless-signal", "40")]
 
 testElectWifi4 :: Test.HUnit.Test
-testElectWifi4 = Nothing
+testElectWifi4 = []
                  ~=?
                  electWifi []
 

@@ -24,21 +24,21 @@ import Data.List (sortBy)
 import Control.Arrow
 
 -- | Command to scan the current wifi
-commandScanWifi :: Maybe String
-commandScanWifi = Just "nmcli --terse --fields ssid,signal dev wifi"
+commandScanWifi :: String
+commandScanWifi = "nmcli --terse --fields ssid,signal dev wifi"
 
 -- | Command to list the wifi the computer can currently auto connect to
-commandListWifiAutoConnect :: Maybe String
-commandListWifiAutoConnect = Just "nmcli --terse --fields name con list"
+commandListWifiAutoConnect :: String
+commandListWifiAutoConnect = "nmcli --terse --fields name con list"
 
 -- | Function to split command into list of strings
 command :: String -> [String]
 command = words
 
 -- | Run a command and displays the output in list of strings
-run :: Maybe String -> IO [String]
-run Nothing            = return []
-run (Just fullCommand) =
+run :: String -> IO [String]
+run ""          = return []
+run fullCommand =
   do result <- readProcess comm args []
      return $ lines result
   where (comm:args) = command fullCommand
@@ -83,35 +83,39 @@ filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
 filterKnownWifi autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
 
 -- | Given a wifi, execute the command to connect to a wifi
-commandConnectToWifi :: Maybe String -> Maybe String
-commandConnectToWifi Nothing     = Nothing
-commandConnectToWifi (Just wifi) = Just $ "nmcli con up id " ++ wifi
+commandConnectToWifi :: [String] -> String
+commandConnectToWifi []     = ""
+commandConnectToWifi [wifi] = "nmcli con up id " ++ wifi
 
 -- | Elect wifi according to signal's power (the most powerful is elected)
-electWifi :: [(String, String)] -> Maybe String
-electWifi []      = Nothing
-electWifi [(w,_)] = Just w
-electWifi wifi    = Just . fst. head . sortBy (compare `on` snd) $ wifi
+electWifi :: [(String, String)] -> [String]
+electWifi []      = []
+electWifi [(w,_)] = [w]
+electWifi wifi    = flip (:) [] . fst . head . sortBy (compare `on` snd) $ wifi
 
-connectToWifiMsg :: Maybe String -> String
-connectToWifiMsg Nothing     = "No connection possible!"
-connectToWifiMsg (Just wifi) = "Connection to wifi '" ++ wifi ++ "'..."
+connectToWifiMsg :: [String] -> String
+connectToWifiMsg []     = "No connection possible!"
+connectToWifiMsg [wifi] = "Connection to wifi '" ++ wifi ++ "'..."
 
-connectedWifiMsg :: Maybe String -> String
-connectedWifiMsg Nothing     = "No known wifi!"
-connectedWifiMsg (Just wifi) = "Connection to wifi '" ++ wifi ++ "' successfully established!"
+connectedWifiMsg :: [String] -> String
+connectedWifiMsg []     = "No known wifi!"
+connectedWifiMsg [wifi] = "Connection to wifi '" ++ wifi ++ "' successfully established!"
 
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
 main = do
   scannedWifis <- scanWifi
-  putStrLn "Scanned wifi: "
-  mapM_ putStrLn $ map (("- "++) . fst) scannedWifis
   autoConnectWifis <- listWifiAutoConnect
-  putStrLn "\nAuto-connect wifi: "
-  mapM_ putStrLn $ map ("- "++) autoConnectWifis
-  putStrLn "\nElect the most powerful wifi signal."
-  electedWifi <- return $ (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
-  putStrLn (connectToWifiMsg electedWifi)
-  (run . commandConnectToWifi) electedWifi
-  putStrLn (connectedWifiMsg electedWifi)
+  electedWifi <- return $ electWifiFrom scannedWifis autoConnectWifis
+  (run . commandConnectToWifi) $ electedWifi
+  mapM_ putStrLn $ ["Scanned wifi: "]
+                 ++ map (("- "++) . fst) scannedWifis
+                 ++ ["\nAuto-connect wifi: "]
+                 ++ map ("- "++) autoConnectWifis
+                 ++ ["\nElect the most powerful wifi signal."]
+                 ++ [(connectToWifiMsg electedWifi)]
+                 ++ [(connectedWifiMsg electedWifi)]
+
+electWifiFrom :: [(String, String)] -> [String] -> [String]
+electWifiFrom scannedWifis autoConnectWifis =
+  (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
