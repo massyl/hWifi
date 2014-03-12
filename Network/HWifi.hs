@@ -104,9 +104,9 @@ connectedWifiMsg [wifi] = "Connection to wifi '" ++ wifi ++ "' successfully esta
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
 main = do
-  scannedWifis <- scanWifi
+  scannedWifis     <- scanWifi
   autoConnectWifis <- listWifiAutoConnect
-  electedWifi <- return $ electWifiFrom scannedWifis autoConnectWifis
+  electedWifi      <- return $ electWifiFrom scannedWifis autoConnectWifis
   (run . commandConnectToWifi) $ electedWifi
   mapM_ putStrLn $ ["Scanned wifi: "]
                  ++ map (("- "++) . fst) scannedWifis
