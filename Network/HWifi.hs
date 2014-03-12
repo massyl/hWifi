@@ -112,9 +112,9 @@ main = do
                  ++ map (("- "++) . fst) scannedWifis
                  ++ ["\nAuto-connect wifi: "]
                  ++ map ("- "++) autoConnectWifis
-                 ++ ["\nElect the most powerful wifi signal."]
-                 ++ [(connectToWifiMsg electedWifi)]
-                 ++ [(connectedWifiMsg electedWifi)]
+                 ++ ["\nElect the most powerful wifi signal."
+                    ,(connectToWifiMsg electedWifi)
+                    ,(connectedWifiMsg electedWifi)]
 
 electWifiFrom :: [(String, String)] -> [String] -> [String]
 electWifiFrom scannedWifis autoConnectWifis =
