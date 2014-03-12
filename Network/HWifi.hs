@@ -99,7 +99,7 @@ main :: IO ()
 main = do
   scannedWifis     <- scanWifi
   autoConnectWifis <- listWifiAutoConnect
-  let electedWifi =  electWifiFrom scannedWifis autoConnectWifis
+  let electedWifi = electWifiFrom scannedWifis autoConnectWifis
   (run . commandConnectToWifi) $ electedWifi
   mapM_ putStrLn $ ["Scanned wifi: "]
                  ++ map (("- "++) . fst) scannedWifis
