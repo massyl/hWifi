@@ -86,7 +86,7 @@ electWifi []      = []
 electWifi [(w,_)] = [w]
 electWifi wifi    = flip (:) [] . fst . head . sortBy (compare `on` snd) $ wifi
 
-logMsg :: String -> [String] ->String -> String
+logMsg :: String -> [String] -> String -> String
 logMsg _ [] _              = "No know wifi!"
 logMsg prefix [msg] suffix = prefix ++ msg ++ suffix
 
