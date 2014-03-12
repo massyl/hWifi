@@ -31,17 +31,10 @@ commandScanWifi = "nmcli --terse --fields ssid,signal dev wifi"
 commandListWifiAutoConnect :: String
 commandListWifiAutoConnect = "nmcli --terse --fields name con list"
 
--- | Function to split command into list of strings
-command :: String -> [String]
-command = words
-
 -- | Run a command and displays the output in list of strings
 run :: String -> IO [String]
-run ""          = return []
-run fullCommand =
-  do result <- readProcess comm args []
-     return $ lines result
-  where (comm:args) = command fullCommand
+run command = readProcess comm args [] >>= return . lines
+  where (comm:args) = words command
 
 -- *Wifi> run "nmcli --terse --fields name con list"
 -- ["myrkr","dantooine","tatooine"]
