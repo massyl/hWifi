@@ -1,6 +1,6 @@
 module HWifiTests where
 
-import Network.HWifi (command, cleanString, sliceSSIDSignal, sliceSSIDSignals, filterKnownWifi, commandScanWifi, commandListWifiAutoConnect, commandConnectToWifi, electWifi)
+import Network.HWifi (cleanString, sliceSSIDSignal, sliceSSIDSignals, filterKnownWifi, commandScanWifi, commandListWifiAutoConnect, commandConnectToWifi, electWifi)
 import Test.HUnit
 
 testCommandScanWifi :: Test.HUnit.Test
@@ -12,15 +12,6 @@ testCommandListWifiAutoConnect :: Test.HUnit.Test
 testCommandListWifiAutoConnect = "nmcli --terse --fields name con list"
                                  ~=?
                                  commandListWifiAutoConnect
-
-testCommand1 :: Test.HUnit.Test
-testCommand1 = ["nmcli","con","list"] ~=? command "nmcli con list"
-
-testCommand2 :: Test.HUnit.Test
-testCommand2 = ["nmcli", "-t", "-f", "name", "con","list"] ~=? command "nmcli -t -f name con list"
-
-testCommands :: Test.HUnit.Test
-testCommands = TestList ["testCommand1" ~: testCommand1, "testCommand2" ~: testCommand2]
 
 testCleanString1 :: Test.HUnit.Test
 testCleanString1 = "hello" ~=? cleanString "'hello'"
@@ -73,7 +64,7 @@ testWifiToConnects = TestList ["testWifiToConnect1" ~: testWifiToConnect1
                                ,"testWifiToConnect2" ~: testWifiToConnect2]
 
 testConnectToWifiCommand1 :: Test.HUnit.Test
-testConnectToWifiCommand1 = "nmcli con up id tatooine"
+testConnectToWifiCommand1 = "sudo nmcli con up id tatooine"
                             ~=?
                             commandConnectToWifi ["tatooine"]
 
@@ -117,7 +108,6 @@ testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1
 tests :: Test.HUnit.Test
 tests = TestList [testCommandScanWifi
                   ,testCommandListWifiAutoConnect
-                  ,testCommands
                   ,testCleanStrings
                   ,testSliceSSIDSignals
                   ,testSliceSSIDSignalss
