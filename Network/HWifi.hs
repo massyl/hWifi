@@ -77,7 +77,7 @@ filterKnownWifi autoConnectWifis = filter $ (== True) . fst . first (`elem` auto
 
 -- | Given a wifi, execute the command to connect to a wifi
 commandConnectToWifi :: [String] -> String
-commandConnectToWifi []     = ""
+commandConnectToWifi []     = []
 commandConnectToWifi [wifi] = "nmcli con up id " ++ wifi
 
 -- | Elect wifi according to signal's power (the most powerful is elected)
