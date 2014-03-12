@@ -31,6 +31,11 @@ commandScanWifi = "nmcli --terse --fields ssid,signal dev wifi"
 commandListWifiAutoConnect :: String
 commandListWifiAutoConnect = "nmcli --terse --fields name con list"
 
+-- | Given a wifi, execute the command to connect to a wifi (need super power :)
+commandConnectToWifi :: [String] -> String
+commandConnectToWifi []     = []
+commandConnectToWifi [wifi] = "sudo nmcli con up id " ++ wifi
+
 -- | Run a command and displays the output in list of strings
 run :: String -> IO [String]
 run command = readProcess comm args [] >>= return . lines
@@ -74,11 +79,6 @@ listWifiAutoConnect = run commandListWifiAutoConnect
 -- | Filter the list of wifis the machine (in its current setup) can autoconnect to
 filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
 filterKnownWifi autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
-
--- | Given a wifi, execute the command to connect to a wifi
-commandConnectToWifi :: [String] -> String
-commandConnectToWifi []     = []
-commandConnectToWifi [wifi] = "sudo nmcli con up id " ++ wifi
 
 -- | Elect wifi according to signal's power (the most powerful is elected)
 electWifi :: [(String, String)] -> [String]
