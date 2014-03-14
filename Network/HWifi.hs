@@ -65,7 +65,7 @@ sliceSSIDSignals = map sliceSSIDSignal
 
 -- | Scan the proximity wifi and return a list of (ssid, signal).
 scanWifi :: IO [(String, String)]
-scanWifi =  map sliceSSIDSignal <$> run commandScanWifi
+scanWifi = map sliceSSIDSignal <$> run commandScanWifi
 
 -- *Wifi> scanWifi
 -- fromList [("Livebox-0ff6","42"),("freewifi","75")]
