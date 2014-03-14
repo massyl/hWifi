@@ -22,6 +22,7 @@ import Data.Function (on)
 import Data.Functor
 import Data.List (sortBy)
 import Control.Arrow
+import Control.Monad.Writer
 
 -- | Command to scan the current wifi
 commandScanWifi :: String
@@ -91,14 +92,16 @@ electWifiFrom :: [(String, String)] -> [String] -> [String]
 electWifiFrom scannedWifis autoConnectWifis =
   (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
 
+-- | Log message function
 logMsg :: String -> [String] -> String -> String
 logMsg _ [] _              = "No know wifi!"
 logMsg prefix [msg] suffix = prefix ++ msg ++ suffix
 
+-- | Log scanned wifi into list of formatted string
 logScannedWifi :: [(String,String)] -> [String]
 logScannedWifi = map (("- "++) . fst)
 
--- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
+-- | Log auto connect wifi into list of formatted string
 logAutoConnectWifi :: [String] -> [String]
 logAutoConnectWifi = map ("- "++)
 
