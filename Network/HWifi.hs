@@ -70,8 +70,8 @@ scanWifi':: String -> Wifi [String] [(String,String)]
 scanWifi' cmd = runWithLog (map sliceSSIDSignal <$> run cmd) logScannedWifi
 
 -- | List the current wifi the computer can connect to
-listWifiAutoConnect' :: Wifi [String] [String]
-listWifiAutoConnect' = runWithLog (run commandListWifiAutoConnect) logAutoConnectWifi
+listWifiAutoConnect' :: String -> Wifi [String] [String]
+listWifiAutoConnect' cmd = runWithLog (run cmd) logAutoConnectWifi
 
 runWithLog :: (Monoid b)=> IO a  -> (a -> b) -> Wifi b a
 runWithLog comp f = do
