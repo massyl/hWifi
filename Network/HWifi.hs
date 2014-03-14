@@ -24,6 +24,9 @@ import Data.List (sortBy)
 import Control.Arrow
 import Control.Monad.Writer
 
+
+type Wifi w a = WriterT w IO a
+
 -- | Command to scan the current wifi
 commandScanWifi :: String
 commandScanWifi = "nmcli --terse --fields ssid,signal dev wifi"
@@ -54,8 +57,6 @@ sliceSSIDSignal s = (cleanString ssid, tail signal) where (ssid, signal) = break
 sliceSSIDSignals :: [String] -> [(String, String)]
 sliceSSIDSignals = map sliceSSIDSignal
 
-type Wifi w a = WriterT w IO a
-
 -- | Scan the proximity wifi and return a list of (ssid, signal).
 scanWifi':: String -> Wifi [String] [(String,String)]
 scanWifi' cmd = runWithLog (map sliceSSIDSignal <$> run cmd) logScannedWifi
@@ -83,9 +84,7 @@ electWifi wifi    = flip (:) [] . fst . head . sortBy (compare `on` snd) $ wifi
 
 -- | Elect wifi according to signal's power joined to a list of auto connect ones
 electWifiFrom :: [(String, String)] -> [String] -> [String]
-electWifiFrom scannedWifis autoConnectWifis =
-  (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
-
+electWifiFrom scannedWifis autoConnectWifis = (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
 
 -- | Log scanned wifi into list of formatted strings
 logScannedWifi :: [(String,String)] -> [String]
