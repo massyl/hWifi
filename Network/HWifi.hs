@@ -90,6 +90,13 @@ logMsg :: String -> [String] -> String -> String
 logMsg _ [] _              = "No know wifi!"
 logMsg prefix [msg] suffix = prefix ++ msg ++ suffix
 
+logScannedWifi :: [(String,String)] -> [String]
+logScannedWifi = map (("- "++) . fst)
+
+-- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
+logAutoConnectWifi :: [String] -> [String]
+logAutoConnectWifi = map ("- "++)
+
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
 main = do
@@ -98,9 +105,9 @@ main = do
   let electedWifi = electWifiFrom scannedWifis autoConnectWifis
   (run . commandConnectToWifi) $ electedWifi
   mapM_ putStrLn $ ["Scanned wifi: "]
-                 ++ map (("- "++) . fst) scannedWifis
+                 ++ logScannedWifi scannedWifis
                  ++ ["\nAuto-connect wifi: "]
-                 ++ map ("- "++) autoConnectWifis
+                 ++ logAutoConnectWifi autoConnectWifis
                  ++ ["\nElect the most powerful wifi signal."
                     ,(logMsg "Connection to wifi '" electedWifi "'")]
 
