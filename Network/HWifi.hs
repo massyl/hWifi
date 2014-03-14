@@ -71,14 +71,6 @@ runWithLog comp f = do
   tell $ f result
   return result
 
--- | Scan the proximity wifi and return a list of (ssid, signal).
-scanWifi :: IO [(String, String)]
-scanWifi = map sliceSSIDSignal <$> run commandScanWifi
-
--- | List the current wifi the computer can connect to
-listWifiAutoConnect :: IO [String]
-listWifiAutoConnect = run commandListWifiAutoConnect
-
 -- | Filter the list of wifis the machine (in its current setup) can autoconnect to
 filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
 filterKnownWifi autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
@@ -94,10 +86,6 @@ electWifiFrom :: [(String, String)] -> [String] -> [String]
 electWifiFrom scannedWifis autoConnectWifis =
   (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
 
--- | Log message function
-logMsg :: String -> [String] -> String -> String
-logMsg _ [] _              = "No know wifi!"
-logMsg prefix [msg] suffix = prefix ++ msg ++ suffix
 
 -- | Log scanned wifi into list of formatted strings
 logScannedWifi :: [(String,String)] -> [String]
