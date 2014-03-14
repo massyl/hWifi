@@ -73,12 +73,12 @@ scanWifi' cmd = runWithLog (map sliceSSIDSignal <$> run cmd) logScannedWifi
 listWifiAutoConnect' :: String -> Wifi [String] [String]
 listWifiAutoConnect' cmd = runWithLog (run cmd) logAutoConnectWifi
 
-runWithLog :: (Monoid b)=> IO a  -> (a -> b) -> Wifi b a
+-- | Runs a computation and logs f on the computation results
+runWithLog :: (Monoid b) => IO a -> (a -> b) -> Wifi b a
 runWithLog comp f = do
   result <- liftIO comp
   tell $ f result
   return result
-
 
 -- | Scan the proximity wifi and return a list of (ssid, signal).
 scanWifi :: IO [(String, String)]
