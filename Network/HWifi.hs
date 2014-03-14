@@ -101,19 +101,17 @@ logMsg prefix [msg] suffix = prefix ++ msg ++ suffix
 
 -- | Log scanned wifi into list of formatted strings
 logScannedWifi :: [(String,String)] -> [String]
-logScannedWifi = map (("- "++) . fst)
+logScannedWifi = ("Scanned wifi: \n" :) . map (("- "++) . fst)
 
 -- | Log auto connect wifi into list of formatted strings
 logAutoConnectWifi :: [String] -> [String]
-logAutoConnectWifi = map ("- "++)
+logAutoConnectWifi = ("\n Auto-connect wifi: \n" :) . map ("- "++)
 
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
 main = do
-  scannedWifis     <- scanWifi
-  autoConnectWifis <- listWifiAutoConnect
+  (scannedWifis, msg1)  <- runWriterT $ scanWifi' commandScanWifi
+  (autoConnectWifis, msg2) <- runWriterT $ listWifiAutoConnect' commandListWifiAutoConnect
   let electedWifi = electWifiFrom scannedWifis autoConnectWifis
   (run . commandConnectToWifi) electedWifi
-  mapM_ putStrLn $ ["Scanned wifi: "] ++ logScannedWifi scannedWifis
-                 ++ ["\nAuto-connect wifi: "] ++ logAutoConnectWifi autoConnectWifis
-                 ++ ["\nElect the most powerful wifi signal.",(logMsg "Connection to wifi '" electedWifi "'")]
+  mapM_ putStrLn $ msg1 ++ msg2
