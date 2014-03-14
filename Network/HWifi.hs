@@ -97,11 +97,11 @@ logMsg :: String -> [String] -> String -> String
 logMsg _ [] _              = "No know wifi!"
 logMsg prefix [msg] suffix = prefix ++ msg ++ suffix
 
--- | Log scanned wifi into list of formatted string
+-- | Log scanned wifi into list of formatted strings
 logScannedWifi :: [(String,String)] -> [String]
 logScannedWifi = map (("- "++) . fst)
 
--- | Log auto connect wifi into list of formatted string
+-- | Log auto connect wifi into list of formatted strings
 logAutoConnectWifi :: [String] -> [String]
 logAutoConnectWifi = map ("- "++)
 
