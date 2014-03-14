@@ -42,15 +42,6 @@ run :: String -> IO [String]
 run command = readProcess comm args [] >>= return . lines
   where (comm:args) = words command
 
--- *Wifi> run "nmcli --terse --fields name con list"
--- ["myrkr","dantooine","tatooine"]
--- *Wifi> run "nmcli con list"
--- ["NAME                      UUID                                   TYPE              TIMESTAMP-REAL                    ","dantooine            68400207-92c9-4c8f-90b4-725b45c8359f   802-11-wireless   mar. 04 f\233vr. 2014 18:44:15 CET   ","myrkr                076684ca-6287-4625-bab6-524b865e185e   802-11-wireless   never                             ","tatooine                  deb87d57-aedc-46a8-8994-ce83c91ce522   802-11-wireless   sam. 08 f\233vr. 2014 13:04:56 CET   "]
-
--- Scan the wifi and return the ssid:signal
--- *Wifi> run "nmcli --terse --fields ssid,signal dev wifi"
--- ["'Livebox-0ff6':42","'tatooine':72"]
-
 -- | Utility function to trim the ' in a string
 cleanString :: String -> String
 cleanString s = if (elem '\'' s) then tail . init $ s else s
@@ -84,15 +75,9 @@ runWithLog comp f = do
 scanWifi :: IO [(String, String)]
 scanWifi = map sliceSSIDSignal <$> run commandScanWifi
 
--- *Wifi> scanWifi
--- fromList [("Livebox-0ff6","42"),("freewifi","75")]
-
 -- | List the current wifi the computer can connect to
 listWifiAutoConnect :: IO [String]
 listWifiAutoConnect = run commandListWifiAutoConnect
-
--- *Wifi> listWifiAutoConnect
--- ["dantooine","myrkr","tatooine"]
 
 -- | Filter the list of wifis the machine (in its current setup) can autoconnect to
 filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
