@@ -63,6 +63,14 @@ sliceSSIDSignal s = (cleanString ssid, tail signal) where (ssid, signal) = break
 sliceSSIDSignals :: [String] -> [(String, String)]
 sliceSSIDSignals = map sliceSSIDSignal
 
+type Wifi a = WriterT [(String, String)] IO a
+
+scanWifi':: String -> Wifi [(String,String)]
+scanWifi' cmd = do
+    wifis <- liftIO $ map sliceSSIDSignal <$> run cmd
+    tell wifis
+    return wifis
+
 -- | Scan the proximity wifi and return a list of (ssid, signal).
 scanWifi :: IO [(String, String)]
 scanWifi = map sliceSSIDSignal <$> run commandScanWifi
