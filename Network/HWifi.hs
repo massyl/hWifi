@@ -86,6 +86,11 @@ electWifi []      = []
 electWifi [(w,_)] = [w]
 electWifi wifi    = flip (:) [] . fst . head . sortBy (compare `on` snd) $ wifi
 
+-- | Elect wifi according to signal's power joined to a list of auto connect ones
+electWifiFrom :: [(String, String)] -> [String] -> [String]
+electWifiFrom scannedWifis autoConnectWifis =
+  (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
+
 logMsg :: String -> [String] -> String -> String
 logMsg _ [] _              = "No know wifi!"
 logMsg prefix [msg] suffix = prefix ++ msg ++ suffix
@@ -110,7 +115,3 @@ main = do
                  ++ logAutoConnectWifi autoConnectWifis
                  ++ ["\nElect the most powerful wifi signal."
                     ,(logMsg "Connection to wifi '" electedWifi "'")]
-
-electWifiFrom :: [(String, String)] -> [String] -> [String]
-electWifiFrom scannedWifis autoConnectWifis =
-  (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
