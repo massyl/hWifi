@@ -111,7 +111,7 @@ main = do
   scannedWifis     <- scanWifi
   autoConnectWifis <- listWifiAutoConnect
   let electedWifi = electWifiFrom scannedWifis autoConnectWifis
-  (run . commandConnectToWifi) $ electedWifi
+  (run . commandConnectToWifi) electedWifi
   mapM_ putStrLn $ ["Scanned wifi: "] ++ logScannedWifi scannedWifis
                  ++ ["\nAuto-connect wifi: "] ++ logAutoConnectWifi autoConnectWifis
                  ++ ["\nElect the most powerful wifi signal.",(logMsg "Connection to wifi '" electedWifi "'")]
