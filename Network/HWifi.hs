@@ -67,17 +67,19 @@ type Wifi w a = WriterT w IO a
 
 -- | Scan the proximity wifi and return a list of (ssid, signal).
 scanWifi':: String -> Wifi [String] [(String,String)]
-scanWifi' cmd = do
-    wifis <- liftIO $ map sliceSSIDSignal <$> run cmd
-    tell $ logScannedWifi wifis
-    return wifis
+scanWifi' cmd = runWithLog (map sliceSSIDSignal <$> run cmd) logScannedWifi
 
 -- | List the current wifi the computer can connect to
 listWifiAutoConnect' :: Wifi [String] [String]
-listWifiAutoConnect' = do
-  wifis <- liftIO $ run commandListWifiAutoConnect
-  tell $ logAutoConnectWifi wifis
-  return wifis
+listWifiAutoConnect' = runWithLog (run commandListWifiAutoConnect) logAutoConnectWifi
+
+runWithLog :: (Monoid b)=> IO a  -> (a -> b) -> Wifi b a
+runWithLog comp f = do
+  result <- liftIO comp
+  tell $ f result
+  return result
+
+
 -- | Scan the proximity wifi and return a list of (ssid, signal).
 scanWifi :: IO [(String, String)]
 scanWifi = map sliceSSIDSignal <$> run commandScanWifi
