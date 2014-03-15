@@ -83,31 +83,20 @@ runWithLog comp f = do
 -- runWithLog :: (Monoid b) => IO a -> (a -> b) -> Wifi b a
 -- runWithLog comp f = liftIO comp >>= (\result -> (tell $ f result) >>  return result)
 
--- | Filter the list of wifis the machine (in its current setup) can autoconnect to
-retainKnown :: [String] -> [String] -> [String]
-retainKnown known = filter $ (== True) . (`elem` known)
-
--- | Elect wifi according to signal's power (the most powerful is elected)
-electWifi :: [String] -> [String]
-electWifi (w : _) = [w]
-
 -- | Elect wifi according to signal's power joined to a list of auto connect ones
-electWifiFrom :: [String] -> [String] -> [String]
-electWifiFrom known = electWifi . retainKnown known
+elect :: [String] -> [String] -> String
+elect known = head . intersect known
 
--- | Log scanned wifi into list of formatted strings
-logAll :: [String] -> [String]
-logAll = ("Scanned wifi: \n" :) . map ("- "++)
+logMsg :: String -> (String -> String) -> [String] -> [String]
+logMsg prefix f = (prefix :) . map f
 
--- | Log auto connect wifi into list of formatted strings
-logKnown :: [String] -> [String]
-logKnown = ("\n Auto-connect wifi: \n" :) . map ("- "++)
-
--- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
+{-- Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
+    the one with the most powerful signal is elected)
+--}
 main :: IO ()
 main = do
-  (allWifis, msg1)   <- runWriterT $ scanWifis cScanWifi
-  (knownWifis, msg2) <- runWriterT $ getKnownWifi cKownWifi
-  run . cConnectToWifi $ electWifiFrom knownWifis allWifis
-  -- run . commandConnectToWifi $ electWifiFrom knownWifis allWifis `catchError` return ["No wifi found"]
+  (allWifis, msg1)   <- runWriterT $ scanWifis scanCmd
+  (knownWifis, msg2) <- runWriterT $ getKnownWifi knownCmd
+  run . connectCmd $ elect knownWifis allWifis
+  -- run . commandConnectToWifi $ elect knownWifis allWifis `catchError` return ["No wifi found"]
   mapM_ putStrLn $ msg1 ++ msg2
