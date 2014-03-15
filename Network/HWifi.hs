@@ -20,28 +20,28 @@ module Network.HWifi where
 import System.Process
 import Data.Function (on)
 import Data.Functor
-import Data.List (sortBy)
-import Control.Arrow
+import Data.List (sortBy, intersect, delete, isPrefixOf)
 import Control.Monad.Writer hiding(mapM_)
 import Data.Foldable hiding (mapM_)
 import Prelude hiding(elem)
 import Control.Monad.Error
-import Control.Applicative((<*))
-
+import Control.Arrow (first, (***))
 type Wifi w a = WriterT w IO a
 data Command = Scan String | ListKnown String | Connect String
 
--- | Command to scan the current wifi
-cScanWifi :: Command
-cScanWifi = Scan "nmcli --terse --fields ssid,signal dev wifi"
+{--
+  Command to scan the current wifi
+--}
+scanCmd :: Command
+scanCmd = Scan "nmcli --terse --fields ssid,signal dev wifi"
 
 -- | Command to list the wifi the computer can currently auto connect to
-cKownWifi :: Command
-cKownWifi = ListKnown "nmcli --terse --fields name con list"
+knownCmd :: Command
+knownCmd = ListKnown "nmcli --terse --fields name con list"
 
 -- | Given a wifi, execute the command to connect to a wifi (need super power :)
-cConnectToWifi :: [String] -> String
-cConnectToWifi [wifi] = "sudo nmcli con up id " ++ wifi
+connectCmd :: String -> String
+connectCmd = ("sudo nmcli con up id " ++)
 
 -- | Run a command and displays the output in list of strings
 run :: String -> IO [String]
