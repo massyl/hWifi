@@ -24,6 +24,9 @@ import Data.List (sortBy)
 import Control.Arrow
 import Control.Monad.Writer
 
+
+type Wifi w a = WriterT w IO a
+
 -- | Command to scan the current wifi
 commandScanWifi :: String
 commandScanWifi = "nmcli --terse --fields ssid,signal dev wifi"
@@ -42,15 +45,6 @@ run :: String -> IO [String]
 run command = readProcess comm args [] >>= return . lines
   where (comm:args) = words command
 
--- *Wifi> run "nmcli --terse --fields name con list"
--- ["myrkr","dantooine","tatooine"]
--- *Wifi> run "nmcli con list"
--- ["NAME                      UUID                                   TYPE              TIMESTAMP-REAL                    ","dantooine            68400207-92c9-4c8f-90b4-725b45c8359f   802-11-wireless   mar. 04 f\233vr. 2014 18:44:15 CET   ","myrkr                076684ca-6287-4625-bab6-524b865e185e   802-11-wireless   never                             ","tatooine                  deb87d57-aedc-46a8-8994-ce83c91ce522   802-11-wireless   sam. 08 f\233vr. 2014 13:04:56 CET   "]
-
--- Scan the wifi and return the ssid:signal
--- *Wifi> run "nmcli --terse --fields ssid,signal dev wifi"
--- ["'Livebox-0ff6':42","'tatooine':72"]
-
 -- | Utility function to trim the ' in a string
 cleanString :: String -> String
 cleanString s = if (elem '\'' s) then tail . init $ s else s
@@ -63,19 +57,20 @@ sliceSSIDSignal s = (cleanString ssid, tail signal) where (ssid, signal) = break
 sliceSSIDSignals :: [String] -> [(String, String)]
 sliceSSIDSignals = map sliceSSIDSignal
 
--- | Scan the proximity wifi
-scanWifi :: IO [(String, String)]
-scanWifi =  map sliceSSIDSignal <$> run commandScanWifi
-
--- *Wifi> scanWifi
--- fromList [("Livebox-0ff6","42"),("freewifi","75")]
+-- | Scan the proximity wifi and return a list of (ssid, signal).
+scanWifi':: String -> Wifi [String] [(String,String)]
+scanWifi' cmd = runWithLog (map sliceSSIDSignal <$> run cmd) logScannedWifi
 
 -- | List the current wifi the computer can connect to
-listWifiAutoConnect :: IO [String]
-listWifiAutoConnect = run commandListWifiAutoConnect
+listWifiAutoConnect' :: String -> Wifi [String] [String]
+listWifiAutoConnect' cmd = runWithLog (run cmd) logAutoConnectWifi
 
--- *Wifi> listWifiAutoConnect
--- ["dantooine","myrkr","tatooine"]
+-- | Runs a computation and logs f on the computation results
+runWithLog :: (Monoid b) => IO a -> (a -> b) -> Wifi b a
+runWithLog comp f = do
+  result <- liftIO comp
+  tell $ f result
+  return result
 
 -- | Filter the list of wifis the machine (in its current setup) can autoconnect to
 filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
@@ -89,29 +84,21 @@ electWifi wifi    = flip (:) [] . fst . head . sortBy (compare `on` snd) $ wifi
 
 -- | Elect wifi according to signal's power joined to a list of auto connect ones
 electWifiFrom :: [(String, String)] -> [String] -> [String]
-electWifiFrom scannedWifis autoConnectWifis =
-  (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
+electWifiFrom scannedWifis autoConnectWifis = (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
 
--- | Log message function
-logMsg :: String -> [String] -> String -> String
-logMsg _ [] _              = "No know wifi!"
-logMsg prefix [msg] suffix = prefix ++ msg ++ suffix
-
--- | Log scanned wifi into list of formatted string
+-- | Log scanned wifi into list of formatted strings
 logScannedWifi :: [(String,String)] -> [String]
-logScannedWifi = map (("- "++) . fst)
+logScannedWifi = ("Scanned wifi: \n" :) . map (("- "++) . fst)
 
--- | Log auto connect wifi into list of formatted string
+-- | Log auto connect wifi into list of formatted strings
 logAutoConnectWifi :: [String] -> [String]
-logAutoConnectWifi = map ("- "++)
+logAutoConnectWifi = ("\n Auto-connect wifi: \n" :) . map ("- "++)
 
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
 main :: IO ()
 main = do
-  scannedWifis     <- scanWifi
-  autoConnectWifis <- listWifiAutoConnect
+  (scannedWifis, msg1)  <- runWriterT $ scanWifi' commandScanWifi
+  (autoConnectWifis, msg2) <- runWriterT $ listWifiAutoConnect' commandListWifiAutoConnect
   let electedWifi = electWifiFrom scannedWifis autoConnectWifis
-  (run . commandConnectToWifi) $ electedWifi
-  mapM_ putStrLn $ ["Scanned wifi: "] ++ logScannedWifi scannedWifis
-                 ++ ["\nAuto-connect wifi: "] ++ logAutoConnectWifi autoConnectWifis
-                 ++ ["\nElect the most powerful wifi signal.",(logMsg "Connection to wifi '" electedWifi "'")]
+  (run . commandConnectToWifi) electedWifi
+  mapM_ putStrLn $ msg1 ++ msg2
