@@ -53,8 +53,8 @@ conCmd = Connect ("sudo nmcli con up id " ++)
 
 -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
 parse :: String -> Wifi
-parse s = wifiDetails
-  where wifiDetails = clean ('\'') *** tail $ break (== ':') s
+parse = wifiDetails
+  where wifiDetails = (clean '\'' *** tail) .  break (== ':')
 
 available:: Command -> WifiMonad [String] [SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for availble function"] >> return []

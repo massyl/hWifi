@@ -22,6 +22,7 @@ module Main
 -----------------------------------------------------------------------------
 import Data.Functor((<$>))
 import Control.Applicative((<*>))
+import Control.Monad(liftM)
 import Network.Utils
 import Network.HWifi (runWifiMonad,
                       elect,
@@ -55,7 +56,8 @@ electedWifi = (elect <$> alreadyUsedWifis <*> availableWifis)
 main :: IO ()
 main = do
   (allWifis, msg1)   <- availableWifisWithLogs
+  mapM_ putStrLn msg1
   (knownWifis, msg2) <- alreadyUsedWifisWithLogs
+  mapM_ putStrLn msg2
   run . connect conCmd $ elect knownWifis allWifis
-  -- run . commandConnectToWifi $ elect knownWifis allWifis `catchError` return ["No wifi found"]
-  mapM_ putStrLn $ msg1 ++ msg2
+  electedWifi >>=  putStrLn . ("\n Elected Wifi: "++)
