@@ -24,11 +24,13 @@ import Prelude hiding(elem)
 import Control.Monad.Error
 import Control.Arrow ((***), second)
 import Network.Utils
+
+
 type WifiMonad w a = WriterT w IO a
 
-type Wifi = (String, String)
-
-type SSID = String
+type SSID  = String
+type Signal= String
+type Wifi = (SSID, Signal)
 
 data Command = Scan{ scan :: String} | Connect {connect :: String -> String}
 
@@ -51,18 +53,20 @@ conCmd = Connect ("sudo nmcli con up id " ++)
 
 -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
 parse :: String -> Wifi
-parse s = wifiDetail
-  where wifiDetail = clean ('\'') *** tail $ break (== ':') s
+parse s = wifiDetails
+  where wifiDetails = clean ('\'') *** tail $ break (== ':') s
 
 available:: Command -> WifiMonad [String] [SSID]
-available (Scan cmd) = runWithLog allWifis logAll
+available (Connect _) = tell ["Irrelevant Command Connect for availble function"] >> return []
+available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = (map (fst . second sort) . map parse) <$> run cmd
         logAll = logMsg ("Scanned wifi: \n") ("- "++)
 
 
 -- | List the current wifi the computer can connect to
 alreadyUsed :: Command -> WifiMonad [String] [SSID]
-alreadyUsed (Scan cmd) = runWithLog (run cmd) logKnown
+alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
+alreadyUsed (Scan cmd)  = runWithLog (run cmd) logKnown
   where logKnown = logMsg ("\n Auto-connect wifi: \n") ("- "++)
 
 -- | Runs a computation and logs f on the computation results
