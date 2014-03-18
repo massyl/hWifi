@@ -21,7 +21,7 @@ testCleanString1 :: Test.HUnit.Test
 testCleanString1 = "hello" ~=? clean quote "'hello'"
 
 testCleanString2 :: Test.HUnit.Test
-testCleanString2 = "hell" ~=? clean quote "'hello"
+testCleanString2 = "hello" ~=? clean quote "'hello"
 
 testCleanString3 :: Test.HUnit.Test
 testCleanString3 = "hello" ~=? clean quote "hello"
@@ -66,7 +66,7 @@ testConnectToWifiCommand1 = "sudo nmcli con up id tatooine"
                             connect conCmd "tatooine"
 
 testConnectToWifiCommand2 :: Test.HUnit.Test
-testConnectToWifiCommand2 = []
+testConnectToWifiCommand2 = "sudo nmcli con up id "
                             ~=?
                             connect conCmd []
 
