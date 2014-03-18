@@ -44,14 +44,34 @@ build-type:          Simple
 
 -- Extra files to be distributed with the package, such as examples or a
 -- README.
-extra-source-files:  README.md
+extra-source-files:  
+   README.md
+  .travis.yml
+  .ghci
+  .gitignore
 
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10
 
 
+source-repository head
+  type: git
+  location: git@github.com:massyl/hWifi.git
+
+
+library
+    exposed-modules:    Network.HWifi
+                        Network.Utils
+                        
+    build-depends: base >=4.6 && <4.7, process, mtl >= 2.1.2
+    
+
 executable hWifi
-  -- .hs or .lhs file containing the Main module.
+    main-is:            Main.hs
+    other-modules:      Network.HWifi
+                        Network.Utils
+  
+  -- .hs or .lhs file ontaining the Main module.
   -- main-is:
 
   -- Modules included in this executable, other than Main.
@@ -61,10 +81,21 @@ executable hWifi
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.6 && <4.7
+  build-depends:       base >=4.6 && <4.7, process, mtl >= 2.1.2
 
   -- Directories containing source files.
   -- hs-source-dirs:
 
   -- Base language which the package is written in.
   default-language:    Haskell2010
+
+test-suite hunit
+  type: exitcode-stdio-1.0
+  main-is: HWifiTests.hs
+--  ghc-options: -w -threaded -rtsopts -with-rtsopts=-N
+  hs-source-dirs: tests
+  build-depends:  QuickCheck >= 2, HUnit >= 1.2, base, hWifi
+  ghc-options:    -Werror
+
+  default-language:    Haskell2010       
+        

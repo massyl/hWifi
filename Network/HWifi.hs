@@ -17,88 +17,65 @@ module Network.HWifi where
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
-import System.Process
-import Data.Function (on)
 import Data.Functor
-import Data.List (sortBy)
-import Control.Arrow
-import Control.Monad.Writer
+import Data.List (intersect, sort)
+import Control.Monad.Writer hiding(mapM_)
+import Prelude hiding(elem)
+import Control.Monad.Error
+import Control.Arrow ((***), second)
+import Network.Utils
 
 
-type Wifi w a = WriterT w IO a
+type WifiMonad w a = WriterT w IO a
 
--- | Command to scan the current wifi
-commandScanWifi :: String
-commandScanWifi = "nmcli --terse --fields ssid,signal dev wifi"
+type SSID  = String
+type Signal= String
+type Wifi = (SSID, Signal)
+
+data Command = Scan{ scan :: String} | Connect {connect :: String -> String}
+
+runWifiMonad :: WifiMonad w a -> IO (a, w)
+runWifiMonad  = runWriterT
+
+{--
+  Command to scan the current wifi
+--}
+scanCmd :: Command
+scanCmd = Scan "nmcli --terse --fields ssid,signal dev wifi"
 
 -- | Command to list the wifi the computer can currently auto connect to
-commandListWifiAutoConnect :: String
-commandListWifiAutoConnect = "nmcli --terse --fields name con list"
+knownCmd :: Command
+knownCmd = Scan "nmcli --terse --fields name con list"
 
 -- | Given a wifi, execute the command to connect to a wifi (need super power :)
-commandConnectToWifi :: [String] -> String
-commandConnectToWifi []     = []
-commandConnectToWifi [wifi] = "sudo nmcli con up id " ++ wifi
-
--- | Run a command and displays the output in list of strings
-run :: String -> IO [String]
-run command = readProcess comm args [] >>= return . lines
-  where (comm:args) = words command
-
--- | Utility function to trim the ' in a string
-cleanString :: String -> String
-cleanString s = if (elem '\'' s) then tail . init $ s else s
+conCmd :: Command
+conCmd = Connect ("sudo nmcli con up id " ++)
 
 -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
-sliceSSIDSignal :: String -> (String, String)
-sliceSSIDSignal s = (cleanString ssid, tail signal) where (ssid, signal) = break (== ':') s
+parse :: String -> Wifi
+parse = wifiDetails
+  where wifiDetails = (clean '\'' *** tail) .  break (== ':')
 
--- | Given a list of signals, return the list of couple (wifi, signal)
-sliceSSIDSignals :: [String] -> [(String, String)]
-sliceSSIDSignals = map sliceSSIDSignal
+available:: Command -> WifiMonad [String] [SSID]
+available (Connect _) = tell ["Irrelevant Command Connect for availble function"] >> return []
+available (Scan cmd)  = runWithLog allWifis logAll
+  where allWifis = (map (fst . second sort) . map parse) <$> run cmd
+        logAll = logMsg ("Scanned wifi: \n") ("- "++)
 
--- | Scan the proximity wifi and return a list of (ssid, signal).
-scanWifi':: String -> Wifi [String] [(String,String)]
-scanWifi' cmd = runWithLog (map sliceSSIDSignal <$> run cmd) logScannedWifi
 
 -- | List the current wifi the computer can connect to
-listWifiAutoConnect' :: String -> Wifi [String] [String]
-listWifiAutoConnect' cmd = runWithLog (run cmd) logAutoConnectWifi
+alreadyUsed :: Command -> WifiMonad [String] [SSID]
+alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
+alreadyUsed (Scan cmd)  = runWithLog (run cmd) logKnown
+  where logKnown = logMsg ("\n Auto-connect wifi: \n") ("- "++)
 
 -- | Runs a computation and logs f on the computation results
-runWithLog :: (Monoid b) => IO a -> (a -> b) -> Wifi b a
+runWithLog :: (Monoid b) => IO a -> (a -> b) -> WifiMonad b a
 runWithLog comp f = do
   result <- liftIO comp
   tell $ f result
   return result
 
--- | Filter the list of wifis the machine (in its current setup) can autoconnect to
-filterKnownWifi :: [String] -> [(String,String)] -> [(String,String)]
-filterKnownWifi autoConnectWifis = filter $ (== True) . fst . first (`elem` autoConnectWifis)
-
--- | Elect wifi according to signal's power (the most powerful is elected)
-electWifi :: [(String, String)] -> [String]
-electWifi []      = []
-electWifi [(w,_)] = [w]
-electWifi wifi    = flip (:) [] . fst . head . sortBy (compare `on` snd) $ wifi
-
 -- | Elect wifi according to signal's power joined to a list of auto connect ones
-electWifiFrom :: [(String, String)] -> [String] -> [String]
-electWifiFrom scannedWifis autoConnectWifis = (electWifi . filterKnownWifi autoConnectWifis) scannedWifis
-
--- | Log scanned wifi into list of formatted strings
-logScannedWifi :: [(String,String)] -> [String]
-logScannedWifi = ("Scanned wifi: \n" :) . map (("- "++) . fst)
-
--- | Log auto connect wifi into list of formatted strings
-logAutoConnectWifi :: [String] -> [String]
-logAutoConnectWifi = ("\n Auto-connect wifi: \n" :) . map ("- "++)
-
--- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible, the one with the most powerful signal is elected)
-main :: IO ()
-main = do
-  (scannedWifis, msg1)  <- runWriterT $ scanWifi' commandScanWifi
-  (autoConnectWifis, msg2) <- runWriterT $ listWifiAutoConnect' commandListWifiAutoConnect
-  let electedWifi = electWifiFrom scannedWifis autoConnectWifis
-  (run . commandConnectToWifi) electedWifi
-  mapM_ putStrLn $ msg1 ++ msg2
+elect :: [SSID] -> [SSID] -> SSID
+elect wifis = head . intersect wifis

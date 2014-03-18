@@ -137,7 +137,11 @@ cabal-init:
 	cabal init
 
 run:
-	runhaskell Network/HWifi.hs
+	cabal run
 
-tests:
-	runhaskell HWifiTests.hs
+test:
+	cabal test
+
+build:
+	cabal configure --enable-tests
+	cabal build
