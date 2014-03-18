@@ -19,7 +19,7 @@ synopsis:            Wifi connections manager in Haskell
 -- description:
 
 -- URL for the project homepage or repository.
-homepage:            https://github.com/ardumont/hWifi.git
+homepage:            https://github.com/lambdatree/hWifi.git
 
 -- The license under which the package is released.
 license:             GPL-2
@@ -56,7 +56,7 @@ cabal-version:       >=1.10
 
 source-repository head
   type: git
-  location: git@github.com:massyl/hWifi.git
+  location: git@github.com:lambdatree/hWifi.git
 
 
 library

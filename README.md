@@ -1,4 +1,4 @@
-hWifi [![Build Status](https://travis-ci.org/ardumont/hWifi.png?branch=master)](https://travis-ci.org/ardumont/hWifi)
+hWifi [![Build Status](https://travis-ci.org/lambdatree/hWifi.png?branch=master)](https://travis-ci.org/lambdatree/hWifi)
 =====================================================================================================================
 
 A simple wifi haskell executable to auto-connect to available Wifi.
