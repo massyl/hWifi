@@ -20,8 +20,8 @@ runhaskell Network/Wifi.hs
 
 Possible output:
 
-``` txt
-Scanned wifi: 
+```text
+Scanned wifi:
 - some-ssid
 - some-other-ssid
 
@@ -53,7 +53,7 @@ Tested only on debian-based machine
 
 - Disconnect your wifi
 - Run the command
-- This will connect you 
+- This will connect you
 
 ## concurrency
 
