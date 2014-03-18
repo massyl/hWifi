@@ -22,7 +22,6 @@ module Main
 -----------------------------------------------------------------------------
 import Data.Functor((<$>))
 import Control.Applicative((<*>))
-import Control.Monad(liftM)
 import Network.Utils
 import Network.HWifi (runWifiMonad,
                       elect,
