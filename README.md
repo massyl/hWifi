@@ -1,4 +1,4 @@
-hWifi [![Build Status](https://travis-ci.org/ardumont/hWifi.png?branch=master)](https://travis-ci.org/ardumont/hWifi)
+hWifi [![Build Status](https://travis-ci.org/lambdatree/hWifi.png?branch=master)](https://travis-ci.org/lambdatree/hWifi)
 =====================================================================================================================
 
 A simple wifi haskell executable to auto-connect to available Wifi.
@@ -20,8 +20,8 @@ runhaskell Network/Wifi.hs
 
 Possible output:
 
-``` txt
-Scanned wifi: 
+```text
+Scanned wifi:
 - some-ssid
 - some-other-ssid
 
@@ -53,7 +53,7 @@ Tested only on debian-based machine
 
 - Disconnect your wifi
 - Run the command
-- This will connect you 
+- This will connect you
 
 ## concurrency
 
