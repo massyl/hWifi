@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+-- {-# LANGUAGE FlexibleContexts #-}
 module Network.HWifi where
 
 -----------------------------------------------------------------------------
@@ -24,15 +26,20 @@ import Prelude hiding(elem)
 import Control.Monad.Error
 import Control.Arrow ((***), second)
 import Network.Utils
-
+import Control.Exception
+import System.IO
 
 type WifiMonad w a = WriterT w IO a
 
 type SSID  = String
 type Signal= String
-type Wifi = (SSID, Signal)
-
+type Wifi  = (SSID, Signal)
+type Log   = String
 data Command = Scan{ scan :: String} | Connect {connect :: String -> String}
+
+instance Show Command where
+  show (Scan _) = "Scanning for finding some Wifi"
+  show (Connect _) = "Connecting to an elected Wifi..."
 
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
@@ -56,7 +63,7 @@ parse :: String -> Wifi
 parse = wifiDetails
   where wifiDetails = (clean '\'' *** tail) .  break (== ':')
 
-available:: Command -> WifiMonad [String] [SSID]
+available:: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for availble function"] >> return []
 available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = (map (fst . second sort) . map parse) <$> run cmd
@@ -64,7 +71,7 @@ available (Scan cmd)  = runWithLog allWifis logAll
 
 
 -- | List the current wifi the computer can connect to
-alreadyUsed :: Command -> WifiMonad [String] [SSID]
+alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog (run cmd) logKnown
   where logKnown = logMsg ("\n Auto-connect wifi: \n") ("- "++)
@@ -77,5 +84,10 @@ runWithLog comp f = do
   return result
 
 -- | Elect wifi according to signal's power joined to a list of auto connect ones
-elect :: [SSID] -> [SSID] -> SSID
+-- | This function throw an exception if you give an empty`wifis` parameter
+elect ::[SSID] -> [SSID] -> SSID
 elect wifis = head . intersect wifis
+
+-- | safe version of `elect` that runs in `IO` monad
+safeElect ::[SSID] -> [SSID] -> IO SSID
+safeElect wifis = (`catchIO` []) . evaluate . head . intersect wifis
