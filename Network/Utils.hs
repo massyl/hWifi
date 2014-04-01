@@ -9,22 +9,19 @@ module Network.Utils where
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
 -- Portability :  portable
--- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
+-- Dependency  :
 --
--- A simple module to deal with wifi connections.
--- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
+-- Utility functions module
 --
--- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
-import System.Process
+import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
-import Control.Monad.Error
-import Control.Monad.Trans
+import Control.Monad.Error (ErrorT, Error, runErrorT, noMsg, strMsg, MonadIO, liftIO)
 import Control.Exception
 import System.IO
 
-data CommandError = EmptyCommand| InvalidCommand| OtherError String  deriving (Show, Eq)
+data CommandError = EmptyCommand | InvalidCommand | OtherError String deriving (Show, Eq)
 instance Error(CommandError) where
   noMsg = OtherError "Some problem occured during command execution"
   strMsg = OtherError
@@ -36,7 +33,7 @@ runProcessMonad = runErrorT
 
 -- | Run a command and displays the output in list of strings
 run :: String -> IO [String]
-run [] = return []
+run []      = return []
 run command = (readProcess comm args [] >>= return . lines) `catchIO` []
   where (comm:args) = words command
 
@@ -52,5 +49,5 @@ logMsg prefix f = (prefix :) . map f
 -- | executes a given `IO a` action, catches and print to stderr any thrown
 -- | exception, then return a defValue and continue execution
 catchIO :: MonadIO m => IO a -> a -> m a
-catchIO ma defValue= liftIO (ma `catch` \(SomeException e) ->
+catchIO ma defValue = liftIO (ma `catch` \(SomeException e) ->
                       hPrint stderr e >> hFlush stderr >> return defValue)

@@ -15,29 +15,26 @@ module Main
 -- Portability :  portable
 -- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
 --
--- A simple module to deal with wifi connections.
+-- A module to deal with wifi connections.
 -- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
 --
--- Use: runhaskell Network/HWifi.hs
+-- Use: cabal run
 -----------------------------------------------------------------------------
-import Control.Monad(join)
-import Data.Functor((<$>))
-import Control.Applicative((<*>))
-import Network.Utils
+
+import Control.Monad (join)
+import Data.Functor ((<$>))
+import Control.Applicative ((<*>))
 import Network.HWifi (runWifiMonad,
+                      safeConnect,
                       safeElect,
-                      connect,
-                      conCmd,
                       knownCmd,
                       scanCmd,
                       alreadyUsed,
-                      available, SSID)
+                      available,
+                      SSID)
 
-
-{-- Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
-    the one with the most powerful signal is elected)
---}
-
+-- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
+--    the one with the most powerful signal is elected)
 availableWifisWithLogs :: IO ([SSID], [String])
 availableWifisWithLogs =  runWifiMonad $ available scanCmd
 
@@ -63,5 +60,5 @@ main = do
   (knownWifis, msg2) <- alreadyUsedWifisWithLogs
   logAll msg2
   let elected = (safeElect knownWifis allWifis)
-  _ <- join $ run . connect conCmd <$> elected
+  _ <- join $ safeConnect <$> elected
   elected >>= putStrLn . ("\n Elected Wifi: "++)

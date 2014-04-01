@@ -1,5 +1,4 @@
 {-# LANGUAGE ScopedTypeVariables #-}
--- {-# LANGUAGE FlexibleContexts #-}
 module Network.HWifi where
 
 -----------------------------------------------------------------------------
@@ -19,15 +18,13 @@ module Network.HWifi where
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
-import Data.Functor
+import Data.Functor ((<$>))
 import Data.List (intersect, sort)
-import Control.Monad.Writer hiding(mapM_)
-import Prelude hiding(elem)
-import Control.Monad.Error
+import Control.Monad.Writer hiding (mapM_)
+import Prelude hiding (elem)
 import Control.Arrow ((***), second)
-import Network.Utils
+import Network.Utils (clean, logMsg, run, catchIO)
 import Control.Exception
-import System.IO
 
 type WifiMonad w a = WriterT w IO a
 
@@ -44,9 +41,7 @@ instance Show Command where
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
 
-{--
-  Command to scan the current wifi
---}
+-- | Command to scan the current wifi
 scanCmd :: Command
 scanCmd = Scan "nmcli --terse --fields ssid,signal dev wifi"
 
@@ -64,7 +59,7 @@ parse = wifiDetails
   where wifiDetails = (clean '\'' *** tail) .  break (== ':')
 
 available:: Command -> WifiMonad [Log][SSID]
-available (Connect _) = tell ["Irrelevant Command Connect for availble function"] >> return []
+available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
 available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = (map (fst . second sort) . map parse) <$> run cmd
         logAll = logMsg ("Scanned wifi: \n") ("- "++)
@@ -88,6 +83,10 @@ runWithLog comp f = do
 elect ::[SSID] -> [SSID] -> SSID
 elect wifis = head . intersect wifis
 
--- | safe version of `elect` that runs in `IO` monad
+-- | Safe version of `elect` that runs in `IO` monad
 safeElect ::[SSID] -> [SSID] -> IO SSID
 safeElect wifis = (`catchIO` []) . evaluate . head . intersect wifis
+
+-- | Run the connection to a wifi
+safeConnect :: String -> IO [String]
+safeConnect = run . connect conCmd

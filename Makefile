@@ -1,3 +1,6 @@
+pr:
+	hub pull-request -b lambdatree:master
+
 install:
 	sudo apt-get install -y haskell-platform
 
