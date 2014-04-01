@@ -15,11 +15,12 @@ module Main
 -- Portability :  portable
 -- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
 --
--- A simple module to deal with wifi connections.
+-- A module to deal with wifi connections.
 -- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
 --
--- Use: runhaskell Network/HWifi.hs
+-- Use: cabal run
 -----------------------------------------------------------------------------
+
 import Control.Monad (join)
 import Data.Functor ((<$>))
 import Control.Applicative ((<*>))
