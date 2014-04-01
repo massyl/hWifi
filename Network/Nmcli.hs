@@ -1,5 +1,4 @@
-module Network.Nmcli( module Network.Types,
-                    scanCmd, knownCmd, conCmd) where
+module Network.Nmcli(scanCmd, knownCmd, conCmd) where
 
 import Network.Types(Command(..))
 

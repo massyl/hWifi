@@ -1,5 +1,5 @@
 module Network.Types where
-import Control.Monad.Error
+
 import Control.Monad.Writer hiding(mapM_)
 
 type WifiMonad w a = WriterT w IO a
@@ -16,9 +16,3 @@ instance Show Command where
 
 
 data CommandError = EmptyCommand| InvalidCommand| OtherError String  deriving (Show, Eq)
-
-instance Error(CommandError) where
-  noMsg = OtherError "Some problem occured during command execution"
-  strMsg = OtherError
-
-type ProcessMonad = ErrorT CommandError IO

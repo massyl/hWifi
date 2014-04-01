@@ -20,17 +20,17 @@ module Main
 --
 -- Use: cabal run
 -----------------------------------------------------------------------------
-
-import Control.Monad (join)
-import Data.Functor ((<$>))
-import Control.Applicative ((<*>))
+import Control.Monad(join)
+import Data.Functor((<$>))
+import Control.Applicative((<*>))
+import Network.Utils(run)
+import Network.Nmcli(conCmd, scanCmd, knownCmd)
+import Network.Types(SSID, Log, Command(..))
 import Network.HWifi (runWifiMonad,
                       safeConnect,
                       safeElect,
                       alreadyUsed,
                       available)
-import Network.Nmcli(conCmd, scanCmd, knownCmd,Command(..))
-import Network.Types(SSID, Log)
 
 -- |Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
 -- |the one with the most powerful signal is elected)

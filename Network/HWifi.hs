@@ -17,14 +17,14 @@ module Network.HWifi where
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
-import Data.Functor ((<$>))
+import Data.Functor((<$>))
 import Data.List (intersect, sort)
 import Control.Monad.Writer hiding(mapM_)
 import Prelude hiding(elem)
 import Control.Arrow ((***), second)
-import Network.Utils (clean, logMsg, run, catchIO)
-import Control.Exception
-import Network.Types(SSID, Log,Wifi, WifiMonad, Command(..))
+import Network.Utils(catchIO, clean, run, logMsg)
+import Control.Exception(evaluate)
+import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..))
 
 -- | helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
@@ -41,7 +41,6 @@ available (Connect _) = tell ["Irrelevant Command Connect for available function
 available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = (map (fst . second sort) . map parse) <$> run cmd
         logAll = logMsg ("Scanned wifi: \n") ("- "++)
-
 
 -- | List already used wifi and reports any logged info
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
