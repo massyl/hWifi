@@ -20,9 +20,9 @@ module Main
 --
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
-import Control.Monad(join)
-import Data.Functor((<$>))
-import Control.Applicative((<*>))
+import Control.Monad (join)
+import Data.Functor ((<$>))
+import Control.Applicative ((<*>))
 import Network.Utils
 import Network.HWifi (runWifiMonad,
                       safeElect,
@@ -31,13 +31,11 @@ import Network.HWifi (runWifiMonad,
                       knownCmd,
                       scanCmd,
                       alreadyUsed,
-                      available, SSID)
+                      available,
+                      SSID)
 
-
-{-- Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
-    the one with the most powerful signal is elected)
---}
-
+-- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
+--    the one with the most powerful signal is elected)
 availableWifisWithLogs :: IO ([SSID], [String])
 availableWifisWithLogs =  runWifiMonad $ available scanCmd
 
