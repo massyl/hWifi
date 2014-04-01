@@ -25,7 +25,7 @@ import Control.Monad.Writer hiding(mapM_)
 import Prelude hiding(elem)
 import Control.Monad.Error
 import Control.Arrow ((***), second)
-import Network.Utils
+import Network.Utils (clean, logMsg, run, catchIO)
 import Control.Exception
 import System.IO
 
