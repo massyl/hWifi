@@ -31,7 +31,8 @@ import Network.HWifi (runWifiMonad,
                       scanCmd,
                       alreadyUsed,
                       available,
-                      SSID)
+                      SSID, Log)
+
 
 -- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
 --    the one with the most powerful signal is elected)
@@ -50,7 +51,7 @@ alreadyUsedWifis = fst <$> alreadyUsedWifisWithLogs
 electedWifi :: IO SSID
 electedWifi = join $ safeElect <$> alreadyUsedWifis <*> availableWifis
 
-logAll:: [String]-> IO ()
+logAll:: [Log]-> IO ()
 logAll = mapM_ putStrLn
 
 main :: IO ()
