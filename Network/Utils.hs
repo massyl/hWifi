@@ -15,9 +15,9 @@ module Network.Utils where
 --
 -----------------------------------------------------------------------------
 
-import System.Process
+import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
-import Control.Monad.Error
+import Control.Monad.Error (ErrorT, Error, runErrorT, noMsg, strMsg, MonadIO, liftIO)
 import Control.Exception
 import System.IO
 
