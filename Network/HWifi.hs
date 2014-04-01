@@ -21,8 +21,8 @@ module Network.HWifi where
 
 import Data.Functor
 import Data.List (intersect, sort)
-import Control.Monad.Writer hiding(mapM_)
-import Prelude hiding(elem)
+import Control.Monad.Writer hiding (mapM_)
+import Prelude hiding (elem)
 import Control.Monad.Error
 import Control.Arrow ((***), second)
 import Network.Utils (clean, logMsg, run, catchIO)
