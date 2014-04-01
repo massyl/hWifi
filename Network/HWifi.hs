@@ -44,9 +44,7 @@ instance Show Command where
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
 
-{--
-  Command to scan the current wifi
---}
+-- | Command to scan the current wifi
 scanCmd :: Command
 scanCmd = Scan "nmcli --terse --fields ssid,signal dev wifi"
 
