@@ -64,7 +64,7 @@ parse = wifiDetails
   where wifiDetails = (clean '\'' *** tail) .  break (== ':')
 
 available:: Command -> WifiMonad [Log][SSID]
-available (Connect _) = tell ["Irrelevant Command Connect for availble function"] >> return []
+available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
 available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = (map (fst . second sort) . map parse) <$> run cmd
         logAll = logMsg ("Scanned wifi: \n") ("- "++)
