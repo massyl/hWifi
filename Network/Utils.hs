@@ -20,7 +20,6 @@ module Network.Utils where
 import System.Process
 import Data.List (delete, isPrefixOf)
 import Control.Monad.Error
-import Control.Monad.Trans
 import Control.Exception
 import System.IO
 
