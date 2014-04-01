@@ -23,7 +23,7 @@ module Main
 import Control.Monad (join)
 import Data.Functor ((<$>))
 import Control.Applicative ((<*>))
-import Network.Utils
+import Network.Utils (run)
 import Network.HWifi (runWifiMonad,
                       safeElect,
                       connect,
