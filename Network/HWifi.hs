@@ -86,3 +86,7 @@ elect wifis = head . intersect wifis
 -- | Safe version of `elect` that runs in `IO` monad
 safeElect ::[SSID] -> [SSID] -> IO SSID
 safeElect wifis = (`catchIO` []) . evaluate . head . intersect wifis
+
+-- | Run the connection to a wifi
+safeConnect :: String -> IO [String]
+safeConnect = run . connect conCmd

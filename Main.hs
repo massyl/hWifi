@@ -24,11 +24,9 @@ module Main
 import Control.Monad (join)
 import Data.Functor ((<$>))
 import Control.Applicative ((<*>))
-import Network.Utils (run)
 import Network.HWifi (runWifiMonad,
+                      safeConnect,
                       safeElect,
-                      connect,
-                      conCmd,
                       knownCmd,
                       scanCmd,
                       alreadyUsed,
@@ -62,5 +60,5 @@ main = do
   (knownWifis, msg2) <- alreadyUsedWifisWithLogs
   logAll msg2
   let elected = (safeElect knownWifis allWifis)
-  _ <- join $ run . connect conCmd <$> elected
+  _ <- join $ safeConnect <$> elected
   elected >>= putStrLn . ("\n Elected Wifi: "++)
