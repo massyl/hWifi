@@ -20,11 +20,12 @@ module Main
 --
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
+import Control.Monad(join)
 import Data.Functor((<$>))
 import Control.Applicative((<*>))
 import Network.Utils
 import Network.HWifi (runWifiMonad,
-                      elect,
+                      safeElect,
                       connect,
                       conCmd,
                       knownCmd,
@@ -50,13 +51,17 @@ alreadyUsedWifis :: IO([SSID])
 alreadyUsedWifis = fst <$> alreadyUsedWifisWithLogs
 
 electedWifi :: IO SSID
-electedWifi = (elect <$> alreadyUsedWifis <*> availableWifis)
+electedWifi = join $ safeElect <$> alreadyUsedWifis <*> availableWifis
+
+logAll:: [String]-> IO ()
+logAll = mapM_ putStrLn
 
 main :: IO ()
 main = do
   (allWifis, msg1)   <- availableWifisWithLogs
-  mapM_ putStrLn msg1
+  logAll msg1
   (knownWifis, msg2) <- alreadyUsedWifisWithLogs
-  mapM_ putStrLn msg2
-  run . connect conCmd $ elect knownWifis allWifis
-  electedWifi >>=  putStrLn . ("\n Elected Wifi: "++)
+  logAll msg2
+  let elected = (safeElect knownWifis allWifis)
+  _ <- join $ run . connect conCmd <$> elected
+  elected >>= putStrLn . ("\n Elected Wifi: "++)
