@@ -9,12 +9,10 @@ module Network.Utils where
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
 -- Portability :  portable
--- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
+-- Dependency  :
 --
--- A simple module to deal with wifi connections.
--- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
+-- Utility functions module
 --
--- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
 import System.Process
