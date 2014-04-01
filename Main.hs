@@ -27,15 +27,13 @@ import Control.Applicative ((<*>))
 import Network.HWifi (runWifiMonad,
                       safeConnect,
                       safeElect,
-                      knownCmd,
-                      scanCmd,
                       alreadyUsed,
-                      available,
-                      SSID, Log)
+                      available)
+import Network.Nmcli(conCmd, scanCmd, knownCmd,Command(..))
+import Network.Types(SSID, Log)
 
-
--- | Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
---    the one with the most powerful signal is elected)
+-- |Scan the wifi, compute the list of autoconnect wifis, connect to one (if multiple possible,
+-- |the one with the most powerful signal is elected)
 availableWifisWithLogs :: IO ([SSID], [String])
 availableWifisWithLogs =  runWifiMonad $ available scanCmd
 

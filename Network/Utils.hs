@@ -17,16 +17,10 @@ module Network.Utils where
 
 import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
-import Control.Monad.Error (ErrorT, Error, runErrorT, noMsg, strMsg, MonadIO, liftIO)
+import Control.Monad.Error
 import Control.Exception
 import System.IO
-
-data CommandError = EmptyCommand | InvalidCommand | OtherError String deriving (Show, Eq)
-instance Error(CommandError) where
-  noMsg = OtherError "Some problem occured during command execution"
-  strMsg = OtherError
-
-type ProcessMonad = ErrorT CommandError IO
+import Network.Types
 
 runProcessMonad:: ProcessMonad a -> IO (Either CommandError a)
 runProcessMonad = runErrorT

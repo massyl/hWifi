@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 module Network.HWifi where
 
 -----------------------------------------------------------------------------
@@ -25,34 +24,11 @@ import Prelude hiding(elem)
 import Control.Arrow ((***), second)
 import Network.Utils (clean, logMsg, run, catchIO)
 import Control.Exception
-
-
-type WifiMonad w a = WriterT w IO a
-type SSID  = String
-type Signal= String
-type Wifi  = (SSID, Signal)
-type Log   = String
-data Command = Scan{ scan :: String} | Connect {connect :: String -> String}
-
-instance Show Command where
-  show (Scan _) = "Scanning for finding some Wifi"
-  show (Connect _) = "Connecting to an elected Wifi..."
+import Network.Types(SSID, Log,Wifi, WifiMonad, Command(..))
 
 -- | helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
-
--- |  Command to scan the current wifi
-scanCmd :: Command
-scanCmd = Scan "nmcli --terse --fields ssid,signal dev wifi"
-
--- | Command to list the wifi the computer can currently auto connect to
-knownCmd :: Command
-knownCmd = Scan "nmcli --terse --fields name con list"
-
--- | Given a wifi, execute the command to connect to a wifi (need super power :)
-conCmd :: Command
-conCmd = Connect ("sudo nmcli con up id " ++)
 
 -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
 parse :: String -> Wifi

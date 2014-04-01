@@ -3,6 +3,7 @@ module Main where
 import Network.HWifi
 import Network.Utils
 import Test.HUnit
+import Network.Nmcli
 
 quote::Char
 quote = '\''

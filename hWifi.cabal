@@ -62,15 +62,18 @@ source-repository head
 library
     exposed-modules:    Network.HWifi
                         Network.Utils
-                        
+                        Network.Types
+                        Network.Nmcli  
+
     build-depends: base >=4.6 && <4.7, process, mtl >= 2.1.2
-    
+    ghc-options: -w -threaded         
 
 executable hWifi
     main-is:            Main.hs
     other-modules:      Network.HWifi
                         Network.Utils
-  
+                        Network.Types
+                        Network.Nmcli  
   -- .hs or .lhs file ontaining the Main module.
   -- main-is:
 
@@ -82,7 +85,7 @@ executable hWifi
 
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.6 && <4.7, process, mtl >= 2.1.2
-
+  ghc-options: -w -threaded
   -- Directories containing source files.
   -- hs-source-dirs:
 
@@ -95,7 +98,7 @@ test-suite hunit
 --  ghc-options: -w -threaded -rtsopts -with-rtsopts=-N
   hs-source-dirs: tests
   build-depends:  QuickCheck >= 2, HUnit >= 1.2, base, hWifi
-  ghc-options:    -Werror
+  ghc-options:    -Werror -w -threaded
 
   default-language:    Haskell2010       
         
