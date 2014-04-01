@@ -19,7 +19,7 @@ module Network.HWifi where
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
-import Data.Functor
+import Data.Functor ((<$>))
 import Data.List (intersect, sort)
 import Control.Monad.Writer hiding (mapM_)
 import Prelude hiding (elem)
