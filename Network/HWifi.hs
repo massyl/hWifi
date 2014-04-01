@@ -1,5 +1,4 @@
 {-# LANGUAGE ScopedTypeVariables #-}
--- {-# LANGUAGE FlexibleContexts #-}
 module Network.HWifi where
 
 -----------------------------------------------------------------------------
