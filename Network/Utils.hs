@@ -17,7 +17,7 @@ module Network.Utils where
 
 import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
-import Control.Monad.Error
+import Control.Monad.Trans(MonadIO, liftIO)
 import Control.Exception (catch, SomeException(..))
 import System.IO(stderr, hFlush, hPrint)
 
