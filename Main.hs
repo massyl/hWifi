@@ -27,7 +27,6 @@ import Network.Utils(run)
 import Network.Nmcli(conCmd, scanCmd, knownCmd)
 import Network.Types(SSID, Log, Command(..))
 import Network.HWifi (runWifiMonad,
-                      safeConnect,
                       safeElect,
                       alreadyUsed,
                       available)
@@ -62,5 +61,5 @@ main = do
   (knownWifis, msg2) <- alreadyUsedWifisWithLogs
   logAll msg2
   let elected = (safeElect knownWifis allWifis)
-  _ <- join $ safeConnect <$> elected
+  _ <- join $ run . connect conCmd <$> elected
   elected >>= putStrLn . ("\n Elected Wifi: "++)

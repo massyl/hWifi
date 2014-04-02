@@ -18,8 +18,8 @@ module Network.Utils where
 import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
 import Control.Monad.Error
-import Control.Exception
-import System.IO
+import Control.Exception (catch, SomeException(..))
+import System.IO(stderr, hFlush, hPrint)
 
 -- | Run a command and displays the output in list of strings
 run :: String -> IO [String]
