@@ -33,6 +33,7 @@ clean c cs = if isPrefixOf [c] cs then sanitize cs else cs
   where sanitize = delChar . reverse . delChar . reverse
         delChar  = delete c
 
+-- | TODO rename this function to more relevant name
 logMsg :: String -> (String -> String) -> [String] -> [String]
 logMsg prefix f = (prefix :) . map f
 

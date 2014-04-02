@@ -1,6 +1,6 @@
 module Network.Types where
 
-import Control.Monad.Writer hiding(mapM_)
+import Control.Monad.Writer (WriterT)
 
 type WifiMonad w a = WriterT w IO a
 type SSID  = String
