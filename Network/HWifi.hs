@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 module Network.HWifi where
 
 -----------------------------------------------------------------------------
@@ -18,60 +17,38 @@ module Network.HWifi where
 -- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
-import Data.Functor ((<$>))
+import Data.Functor((<$>))
 import Data.List (intersect, sort)
-import Control.Monad.Writer hiding (mapM_)
-import Prelude hiding (elem)
+import Control.Monad.Writer hiding(mapM_)
 import Control.Arrow ((***), second)
-import Network.Utils (clean, logMsg, run, catchIO)
-import Control.Exception
+import Network.Utils(catchIO, clean, run, logMsg)
+import Control.Exception(evaluate)
+import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..))
 
-type WifiMonad w a = WriterT w IO a
-
-type SSID  = String
-type Signal= String
-type Wifi  = (SSID, Signal)
-type Log   = String
-data Command = Scan{ scan :: String} | Connect {connect :: String -> String}
-
-instance Show Command where
-  show (Scan _) = "Scanning for finding some Wifi"
-  show (Connect _) = "Connecting to an elected Wifi..."
-
+-- | helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
-
--- | Command to scan the current wifi
-scanCmd :: Command
-scanCmd = Scan "nmcli --terse --fields ssid,signal dev wifi"
-
--- | Command to list the wifi the computer can currently auto connect to
-knownCmd :: Command
-knownCmd = Scan "nmcli --terse --fields name con list"
-
--- | Given a wifi, execute the command to connect to a wifi (need super power :)
-conCmd :: Command
-conCmd = Connect ("sudo nmcli con up id " ++)
 
 -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
 parse :: String -> Wifi
 parse = wifiDetails
   where wifiDetails = (clean '\'' *** tail) .  break (== ':')
 
+-- | runs a give scan command and returns all available wifis and reports any logged info
 available:: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
 available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = (map (fst . second sort) . map parse) <$> run cmd
         logAll = logMsg ("Scanned wifi: \n") ("- "++)
 
-
--- | List the current wifi the computer can connect to
+-- | List already used wifi and reports any logged info
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog (run cmd) logKnown
   where logKnown = logMsg ("\n Auto-connect wifi: \n") ("- "++)
 
--- | Runs a computation and logs f on the computation results
+-- | Runs a computation `comp`, get the result and logs the
+-- | application of `f` on it and then return this result.
 runWithLog :: (Monoid b) => IO a -> (a -> b) -> WifiMonad b a
 runWithLog comp f = do
   result <- liftIO comp
@@ -83,10 +60,6 @@ runWithLog comp f = do
 elect ::[SSID] -> [SSID] -> SSID
 elect wifis = head . intersect wifis
 
--- | Safe version of `elect` that runs in `IO` monad
-safeElect ::[SSID] -> [SSID] -> IO SSID
+-- | safe version of `elect` that runs in `IO` monad
+safeElect :: [SSID] -> [SSID] -> IO SSID
 safeElect wifis = (`catchIO` []) . evaluate . head . intersect wifis
-
--- | Run the connection to a wifi
-safeConnect :: String -> IO [String]
-safeConnect = run . connect conCmd

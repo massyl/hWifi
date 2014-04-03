@@ -17,19 +17,9 @@ module Network.Utils where
 
 import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
-import Control.Monad.Error (ErrorT, Error, runErrorT, noMsg, strMsg, MonadIO, liftIO)
-import Control.Exception
-import System.IO
-
-data CommandError = EmptyCommand | InvalidCommand | OtherError String deriving (Show, Eq)
-instance Error(CommandError) where
-  noMsg = OtherError "Some problem occured during command execution"
-  strMsg = OtherError
-
-type ProcessMonad = ErrorT CommandError IO
-
-runProcessMonad:: ProcessMonad a -> IO (Either CommandError a)
-runProcessMonad = runErrorT
+import Control.Monad.Trans(MonadIO, liftIO)
+import Control.Exception (catch, SomeException(..))
+import System.IO(stderr, hFlush, hPrint)
 
 -- | Run a command and displays the output in list of strings
 run :: String -> IO [String]
@@ -43,6 +33,7 @@ clean c cs = if isPrefixOf [c] cs then sanitize cs else cs
   where sanitize = delChar . reverse . delChar . reverse
         delChar  = delete c
 
+-- | TODO rename this function to more relevant name
 logMsg :: String -> (String -> String) -> [String] -> [String]
 logMsg prefix f = (prefix :) . map f
 
