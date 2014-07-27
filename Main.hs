@@ -31,7 +31,7 @@ import Network.HWifi (runWifiMonad,
                       alreadyUsed,
                       available)
 
--- | Returns the list of available network wifis and record any logged message
+-- | Returns the available network wifi list and records any logged message
 availableWifisWithLogs :: IO ([SSID], [Log])
 availableWifisWithLogs =  runWifiMonad $ available scanCmd
 
@@ -39,7 +39,7 @@ availableWifisWithLogs =  runWifiMonad $ available scanCmd
 availableWifis :: IO [SSID]
 availableWifis = fst <$> availableWifisWithLogs
 
--- | Returns the list of already used network wifis and record any logged message
+-- | Returns already used network wifi list and record any logged message.
 alreadyUsedWifisWithLogs :: IO ([SSID], [Log])
 alreadyUsedWifisWithLogs = runWifiMonad $ alreadyUsed knownCmd
 
@@ -47,7 +47,7 @@ alreadyUsedWifisWithLogs = runWifiMonad $ alreadyUsed knownCmd
 alreadyUsedWifis :: IO [SSID]
 alreadyUsedWifis = fst <$> alreadyUsedWifisWithLogs
 
--- | Returns the elected wifi : already used and available with high signal.
+-- | Returns elected wifi (wifi already known, available, with highest signal).
 electedWifi :: IO SSID
 electedWifi = join $ safeElect <$> alreadyUsedWifis <*> availableWifis
 
