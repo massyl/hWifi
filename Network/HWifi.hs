@@ -41,7 +41,7 @@ available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = map (fst . second sort . parse) <$> run cmd
         logAll = logMsg "Scanned wifi: \n" ("- "++)
 
--- | List already used wifi and reports any logged info
+-- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog (run cmd) logKnown
@@ -55,11 +55,11 @@ runWithLog comp f = do
   tell $ f result
   return result
 
--- | Elect wifi according to signal's power joined to a list of auto connect ones
+-- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter
 elect :: [SSID] -> [SSID] -> SSID
 elect wifis = head . intersect wifis
 
--- | Safe wifi `elect`ion (runs in `IO` monad)
+-- | Elects wifi safely (runs in `IO` monad)
 safeElect :: [SSID] -> [SSID] -> IO SSID
 safeElect wifis = (`catchIO` []) . evaluate . elect wifis
