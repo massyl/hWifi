@@ -20,11 +20,25 @@ import Data.List (delete, isPrefixOf)
 import Control.Monad.Trans(MonadIO, liftIO)
 import Control.Exception (catch, SomeException(..))
 import System.IO(stderr, hFlush, hPrint)
+import Control.Monad (liftM)
+import Control.Monad.Error (ErrorT, Error, runErrorT, noMsg, strMsg, MonadIO, liftIO)
+import Control.Exception
+import System.IO
+
+data CommandError = EmptyCommand | InvalidCommand | OtherError String deriving (Show, Eq)
+instance Error(CommandError) where
+  noMsg = OtherError "Some problem occured during command execution"
+  strMsg = OtherError
+
+type ProcessMonad = ErrorT CommandError IO
+
+runProcessMonad:: ProcessMonad a -> IO (Either CommandError a)
+runProcessMonad = runErrorT
 
 -- | Runs a command and displays the output in list of strings
 run :: String -> IO [String]
 run []      = return []
-run command = (readProcess comm args [] >>= return . lines) `catchIO` []
+run command = liftM lines (readProcess comm args []) `catchIO` []
   where (comm:args) = words command
 
 -- | Utility function to trim the ' in a string
