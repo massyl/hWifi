@@ -60,6 +60,6 @@ main = do
   logAll msg1
   (knownWifis, msg2) <- alreadyUsedWifisWithLogs
   logAll msg2
-  let elected = (safeElect knownWifis allWifis)
+  let elected = safeElect knownWifis allWifis
   _ <- join $ run . connect conCmd <$> elected
   elected >>= putStrLn . ("\n Elected Wifi: "++)
