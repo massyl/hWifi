@@ -8,6 +8,8 @@ type Signal= String
 type Wifi  = (SSID, Signal)
 type Log   = String
 
+-- | A command is either to scan wifi or to connect to one.
+--
 data Command = Scan { scan :: String }
              | Connect { connect :: String -> String }
 
