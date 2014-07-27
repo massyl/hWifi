@@ -31,20 +31,20 @@ import Network.HWifi (runWifiMonad,
                       alreadyUsed,
                       available)
 
--- |Returns the list of available network wifis and record any logged message
+-- | Returns the list of available network wifis and record any logged message
 availableWifisWithLogs :: IO ([SSID], [Log])
 availableWifisWithLogs =  runWifiMonad $ available scanCmd
 
--- |Returns available network wifis. It discards any logged message.
 availableWifis :: IO([SSID])
+-- | Returns available network wifis. It discards any logged message.
 availableWifis = fst <$> availableWifisWithLogs
 
--- |Returns the list of already used network wifis and record any logged message
+-- | Returns the list of already used network wifis and record any logged message
 alreadyUsedWifisWithLogs :: IO ([SSID], [Log])
 alreadyUsedWifisWithLogs = runWifiMonad $ alreadyUsed knownCmd
 
--- |Returns already used network wifis. It discards any logged message.
 alreadyUsedWifis :: IO([SSID])
+-- | Returns already used network wifis. It discards any logged message.
 alreadyUsedWifis = fst <$> alreadyUsedWifisWithLogs
 
 -- | Returns the elected wifi : already used and available with high signal.
