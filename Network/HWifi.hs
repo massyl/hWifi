@@ -39,13 +39,13 @@ available:: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
 available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = map (fst . second sort . parse) <$> run cmd
-        logAll = logMsg ("Scanned wifi: \n") ("- "++)
+        logAll = logMsg "Scanned wifi: \n" ("- "++)
 
 -- | List already used wifi and reports any logged info
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog (run cmd) logKnown
-  where logKnown = logMsg ("\n Auto-connect wifi: \n") ("- "++)
+  where logKnown = logMsg "\n Auto-connect wifi: \n" ("- "++)
 
 -- | Runs a computation `comp`, get the result and logs the
 -- | application of `f` on it and then return this result.
