@@ -2,7 +2,6 @@ module Network.Nmcli(scanCmd, knownCmd, conCmd) where
 
 import Network.Types(Command(..))
 
-
 -- |  Command to scan the current wifi
 scanCmd :: Command
 scanCmd = Scan "nmcli --terse --fields ssid,signal dev wifi"
