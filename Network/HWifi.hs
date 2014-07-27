@@ -25,7 +25,7 @@ import Network.Utils(catchIO, clean, run, logMsg)
 import Control.Exception(evaluate)
 import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..))
 
--- | helper function, to run stack of monad transformers
+-- | Helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
 
@@ -34,8 +34,8 @@ parse :: String -> Wifi
 parse = wifiDetails
   where wifiDetails = (clean '\'' *** tail) .  break (== ':')
 
--- | runs a give scan command and returns all available wifis and reports any logged info
-available:: Command -> WifiMonad [Log][SSID]
+-- | Runs a given command, returns available wifis and reports any logged info.
+available :: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
 available (Scan cmd)  = runWithLog allWifis logAll
   where allWifis = map (fst . second sort . parse) <$> run cmd
@@ -56,10 +56,10 @@ runWithLog comp f = do
   return result
 
 -- | Elect wifi according to signal's power joined to a list of auto connect ones
--- | This function throw an exception if you give an empty`wifis` parameter
-elect ::[SSID] -> [SSID] -> SSID
+-- | This function throws an exception if you give an empty `wifis` parameter
+elect :: [SSID] -> [SSID] -> SSID
 elect wifis = head . intersect wifis
 
--- | safe version of `elect` that runs in `IO` monad
+-- | Safe wifi `elect`ion (runs in `IO` monad)
 safeElect :: [SSID] -> [SSID] -> IO SSID
 safeElect wifis = (`catchIO` []) . evaluate . head . intersect wifis
