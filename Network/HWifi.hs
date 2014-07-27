@@ -38,7 +38,7 @@ parse = wifiDetails
 available:: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
 available (Scan cmd)  = runWithLog allWifis logAll
-  where allWifis = (map (fst . second sort) . map parse) <$> run cmd
+  where allWifis = map (fst . second sort . parse) <$> run cmd
         logAll = logMsg ("Scanned wifi: \n") ("- "++)
 
 -- | List already used wifi and reports any logged info
