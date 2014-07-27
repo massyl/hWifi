@@ -34,7 +34,7 @@ type ProcessMonad = ErrorT CommandError IO
 runProcessMonad:: ProcessMonad a -> IO (Either CommandError a)
 runProcessMonad = runErrorT
 
--- | Runs a command and displays the output in list of strings
+-- | Runs a command and displays the output as a string list
 run :: String -> IO [String]
 run []      = return []
 run command = liftM lines (readProcess comm args []) `catchIO` []
