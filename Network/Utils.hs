@@ -24,6 +24,7 @@ import System.IO(stderr, hFlush, hPrint)
 import Control.Monad (liftM)
 
 data CommandError = EmptyCommand | InvalidCommand | OtherError String deriving (Show, Eq)
+
 instance Error(CommandError) where
   noMsg = OtherError "Some problem occured during command execution"
   strMsg = OtherError
