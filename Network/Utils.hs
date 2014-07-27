@@ -17,13 +17,11 @@ module Network.Utils where
 
 import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
-import Control.Monad.Trans(MonadIO, liftIO)
 import Control.Exception (catch, SomeException(..))
+import Control.Monad.Trans (MonadIO, liftIO)
+import Control.Monad.Error (ErrorT, Error, runErrorT, noMsg, strMsg, MonadIO, liftIO)
 import System.IO(stderr, hFlush, hPrint)
 import Control.Monad (liftM)
-import Control.Monad.Error (ErrorT, Error, runErrorT, noMsg, strMsg, MonadIO, liftIO)
-import Control.Exception
-import System.IO
 
 data CommandError = EmptyCommand | InvalidCommand | OtherError String deriving (Show, Eq)
 instance Error(CommandError) where
