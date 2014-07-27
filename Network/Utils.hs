@@ -29,7 +29,7 @@ run command = (readProcess comm args [] >>= return . lines) `catchIO` []
 
 -- | Utility function to trim the ' in a string
 clean :: Char -> String -> String
-clean c cs = if isPrefixOf [c] cs then sanitize cs else cs
+clean c cs = if [c] `isPrefixOf` cs then sanitize cs else cs
   where sanitize = delChar . reverse . delChar . reverse
         delChar  = delete c
 
