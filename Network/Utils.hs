@@ -21,7 +21,7 @@ import Control.Monad.Trans(MonadIO, liftIO)
 import Control.Exception (catch, SomeException(..))
 import System.IO(stderr, hFlush, hPrint)
 
--- | Run a command and displays the output in list of strings
+-- | Runs a command and displays the output in list of strings
 run :: String -> IO [String]
 run []      = return []
 run command = (readProcess comm args [] >>= return . lines) `catchIO` []
@@ -37,8 +37,8 @@ clean c cs = if isPrefixOf [c] cs then sanitize cs else cs
 logMsg :: String -> (String -> String) -> [String] -> [String]
 logMsg prefix f = (prefix :) . map f
 
--- | executes a given `IO a` action, catches and print to stderr any thrown
--- | exception, then return a defValue and continue execution
+-- | Executes a given `IO a` action, catches and print to stderr any thrown
+-- | exception, then returns a defValue and continues execution
 catchIO :: MonadIO m => IO a -> a -> m a
 catchIO ma defValue = liftIO (ma `catch` \(SomeException e) ->
                       hPrint stderr e >> hFlush stderr >> return defValue)

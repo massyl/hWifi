@@ -31,7 +31,8 @@ runWifiMonad  = runWriterT
 
 -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
 parse :: String -> Wifi
-parse = (clean '\'' *** tail) .  break (== ':')
+parse = wifiDetails
+  where wifiDetails = (clean '\'' *** tail) .  break (== ':')
 
 -- | runs a give scan command and returns all available wifis and reports any logged info
 available:: Command -> WifiMonad [Log][SSID]
