@@ -1,8 +1,8 @@
-module Main
-       (main,
-        availableWifis,
-        alreadyUsedWifis,
-        electedWifi) where
+module Main (main
+            , availableWifis
+            , alreadyUsedWifis
+            , electedWifi)
+       where
 
 -----------------------------------------------------------------------------
 -- |
