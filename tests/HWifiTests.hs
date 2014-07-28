@@ -80,12 +80,7 @@ testConnectToWifiCommands = TestList ["testConnectToWifiCommand1" ~: testConnect
 testElectWifi1 :: Test.HUnit.Test
 testElectWifi1 = "some-wifi-alone"
                  ~=?
-                 elect ["some-wifi-alone", "wifi2", "wifi3"] ["some-wifi-alone","known1", "known2"]
-
--- testElectWifi4 :: Test.HUnit.Test
--- testElectWifi4 = []
---                  ~=?
---                  electWifi []
+                 unsafeElect ["some-wifi-alone", "wifi2", "wifi3"] ["some-wifi-alone","known1", "known2"]
 
 testElectWifis :: Test.HUnit.Test
 testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1]
