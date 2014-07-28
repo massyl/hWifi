@@ -56,9 +56,9 @@ runWithLog comp f = do
 
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter
-elect :: [SSID] -> [SSID] -> SSID
-elect wifis = head . intersect wifis
+unsafeElect :: [SSID] -> [SSID] -> SSID
+unsafeElect wifis = head . intersect wifis
 
 -- | Elects wifi safely (runs in `IO` monad)
-safeElect :: [SSID] -> [SSID] -> IO SSID
-safeElect wifis = (`catchIO` []) . evaluate . elect wifis
+elect :: [SSID] -> [SSID] -> IO SSID
+elect wifis = (`catchIO` []) . evaluate . unsafeElect wifis

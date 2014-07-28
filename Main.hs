@@ -27,7 +27,7 @@ import Network.Utils(run)
 import Network.Nmcli(conCmd, scanCmd, knownCmd)
 import Network.Types(SSID, Log, Command(..))
 import Network.HWifi (runWifiMonad,
-                      safeElect,
+                      elect,
                       alreadyUsed,
                       available)
 
@@ -49,7 +49,7 @@ alreadyUsedWifis = fst <$> alreadyUsedWifisWithLogs
 
 -- | Returns elected wifi (wifi already known, available, with highest signal).
 electedWifi :: IO SSID
-electedWifi = join $ safeElect <$> alreadyUsedWifis <*> availableWifis
+electedWifi = join $ elect <$> alreadyUsedWifis <*> availableWifis
 
 logAll:: [Log]-> IO ()
 logAll = mapM_ putStrLn
@@ -60,6 +60,6 @@ main = do
   logAll msg1
   (knownWifis, msg2) <- alreadyUsedWifisWithLogs
   logAll msg2
-  let elected = safeElect knownWifis allWifis
+  let elected = elect knownWifis allWifis
   _ <- join $ run . connect conCmd <$> elected
   elected >>= putStrLn . ("\n Elected Wifi: "++)
