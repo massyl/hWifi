@@ -21,7 +21,6 @@ import Control.Exception (catch, SomeException(..))
 import Control.Monad.Trans (MonadIO, liftIO)
 import Control.Monad.Error (ErrorT, Error, runErrorT, noMsg, strMsg, MonadIO, liftIO)
 import System.IO(stderr, hFlush, hPrint)
-import Control.Monad (liftM)
 
 data CommandError = EmptyCommand | InvalidCommand | OtherError String deriving (Show, Eq)
 
@@ -37,7 +36,7 @@ runProcessMonad = runErrorT
 -- | Runs a command and displays the output as a string list
 run :: String -> IO [String]
 run []      = return []
-run command = liftM lines (readProcess comm args []) `catchIO` []
+run command = fmap lines (readProcess comm args []) `catchIO` []
   where (comm:args) = words command
 
 -- | Utility function to trim the ' in a string
