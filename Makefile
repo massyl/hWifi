@@ -19,7 +19,7 @@ cabal-init:
 run:
 	cabal run
 
-test:
+test: build
 	cabal test
 
 build:
