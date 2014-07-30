@@ -4,8 +4,8 @@ pr:
 install:
 	sudo apt-get install -y haskell-platform
 
-deps: cabal-init
-
+deps:
+	cabal install mtl QuickCheck HUnit
 
 sandbox-init:
 	cabal sandbox init
@@ -19,7 +19,7 @@ cabal-init:
 run:
 	cabal run
 
-test: build
+test:
 	cabal test
 
 build:
