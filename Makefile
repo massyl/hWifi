@@ -4,8 +4,8 @@ pr:
 install:
 	sudo apt-get install -y haskell-platform
 
-deps:
-	echo "Nothing yet"
+deps: cabal-init
+
 
 sandbox-init:
 	cabal sandbox init
