@@ -1,6 +1,6 @@
 before_install:
   - make install
   - export PATH=$HOME/.cabal/bin:$PATH
-  - make sandbox-init deps build
+  - make deps build
   
 script: make test
