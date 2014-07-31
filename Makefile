@@ -26,3 +26,6 @@ test:
 build:
 	cabal configure --enable-tests
 	cabal build
+
+run-nix-shell:
+	nix-shell --pure hwifi.nix
