@@ -3,9 +3,10 @@ pr:
 
 install:
 	sudo apt-get install -y haskell-platform
+	cabal update &&	cabal install cabal-install
 
 deps:
-	cabal update &&	cabal install cabal-install mtl QuickCheck HUnit
+	cabal install base process mtl QuickCheck HUnit
 
 sandbox-init:
 	cabal sandbox init
