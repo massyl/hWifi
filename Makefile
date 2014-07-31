@@ -5,7 +5,7 @@ install:
 	sudo apt-get install -y haskell-platform
 
 deps:
-	cabal update &&	cabal install mtl QuickCheck HUnit
+	cabal update &&	cabal install cabal-install mtl QuickCheck HUnit
 
 sandbox-init:
 	cabal sandbox init
