@@ -25,27 +25,26 @@ import Network.Utils(catchIO, clean, run, logMsg)
 import Control.Exception(evaluate)
 import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..))
 
--- | helper function, to run stack of monad transformers
+-- | Helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
 
 -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
 parse :: String -> Wifi
-parse = wifiDetails
-  where wifiDetails = (clean '\'' *** tail) .  break (== ':')
+parse = (clean '\'' *** tail) . break (== ':')
 
--- | runs a give scan command and returns all available wifis and reports any logged info
-available:: Command -> WifiMonad [Log][SSID]
+-- | Runs a given command, returns available wifis and reports any logged info.
+available :: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
 available (Scan cmd)  = runWithLog allWifis logAll
-  where allWifis = (map (fst . second sort) . map parse) <$> run cmd
-        logAll = logMsg ("Scanned wifi: \n") ("- "++)
+  where allWifis = map (fst . second sort . parse) <$> run cmd
+        logAll = logMsg "Scanned wifi: \n" ("- "++)
 
--- | List already used wifi and reports any logged info
+-- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog (run cmd) logKnown
-  where logKnown = logMsg ("\n Auto-connect wifi: \n") ("- "++)
+  where logKnown = logMsg "\n Auto-connect wifi: \n" ("- "++)
 
 -- | Runs a computation `comp`, get the result and logs the
 -- | application of `f` on it and then return this result.
@@ -55,11 +54,11 @@ runWithLog comp f = do
   tell $ f result
   return result
 
--- | Elect wifi according to signal's power joined to a list of auto connect ones
--- | This function throw an exception if you give an empty`wifis` parameter
-elect ::[SSID] -> [SSID] -> SSID
-elect wifis = head . intersect wifis
+-- | Elects wifi according to signal's power joined to a list of auto connect ones
+-- | This function throws an exception if you give an empty `wifis` parameter
+unsafeElect :: [SSID] -> [SSID] -> SSID
+unsafeElect wifis = head . intersect wifis
 
--- | safe version of `elect` that runs in `IO` monad
-safeElect :: [SSID] -> [SSID] -> IO SSID
-safeElect wifis = (`catchIO` []) . evaluate . head . intersect wifis
+-- | Elects wifi safely (runs in `IO` monad)
+elect :: [SSID] -> [SSID] -> IO SSID
+elect wifis = (`catchIO` []) . evaluate . unsafeElect wifis

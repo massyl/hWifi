@@ -1,8 +1,8 @@
-module Main
-       (main,
-        availableWifis,
-        alreadyUsedWifis,
-        electedWifi) where
+module Main (main
+            , availableWifis
+            , alreadyUsedWifis
+            , electedWifi)
+       where
 
 -----------------------------------------------------------------------------
 -- |
@@ -27,29 +27,29 @@ import Network.Utils(run)
 import Network.Nmcli(conCmd, scanCmd, knownCmd)
 import Network.Types(SSID, Log, Command(..))
 import Network.HWifi (runWifiMonad,
-                      safeElect,
+                      elect,
                       alreadyUsed,
                       available)
 
--- |Returns the list of available network wifis and record any logged message
+-- | Returns the available network wifi list and records any logged message
 availableWifisWithLogs :: IO ([SSID], [Log])
 availableWifisWithLogs =  runWifiMonad $ available scanCmd
 
--- |Returns available network wifis. It discards any logged message.
-availableWifis :: IO([SSID])
+-- | Returns available network wifis. It discards any logged message.
+availableWifis :: IO [SSID]
 availableWifis = fst <$> availableWifisWithLogs
 
--- |Returns the list of already used network wifis and record any logged message
+-- | Returns already used network wifi list and record any logged message.
 alreadyUsedWifisWithLogs :: IO ([SSID], [Log])
 alreadyUsedWifisWithLogs = runWifiMonad $ alreadyUsed knownCmd
 
--- |Returns already used network wifis. It discards any logged message.
-alreadyUsedWifis :: IO([SSID])
+-- | Returns already used network wifis. It discards any logged message.
+alreadyUsedWifis :: IO [SSID]
 alreadyUsedWifis = fst <$> alreadyUsedWifisWithLogs
 
--- | Returns the elected wifi : already used and available with high signal.
+-- | Returns elected wifi (wifi already known, available, with highest signal).
 electedWifi :: IO SSID
-electedWifi = join $ safeElect <$> alreadyUsedWifis <*> availableWifis
+electedWifi = join $ elect <$> alreadyUsedWifis <*> availableWifis
 
 logAll:: [Log]-> IO ()
 logAll = mapM_ putStrLn
@@ -60,6 +60,6 @@ main = do
   logAll msg1
   (knownWifis, msg2) <- alreadyUsedWifisWithLogs
   logAll msg2
-  let elected = (safeElect knownWifis allWifis)
+  let elected = elect knownWifis allWifis
   _ <- join $ run . connect conCmd <$> elected
   elected >>= putStrLn . ("\n Elected Wifi: "++)

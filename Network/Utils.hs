@@ -17,19 +17,20 @@ module Network.Utils where
 
 import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
-import Control.Monad.Trans(MonadIO, liftIO)
+import Data.Functor((<$>))
 import Control.Exception (catch, SomeException(..))
+import Control.Monad.Trans (MonadIO, liftIO)
 import System.IO(stderr, hFlush, hPrint)
 
--- | Run a command and displays the output in list of strings
+-- | Runs a command and displays the output as a string list
 run :: String -> IO [String]
 run []      = return []
-run command = (readProcess comm args [] >>= return . lines) `catchIO` []
+run command = lines <$> readProcess comm args [] `catchIO` []
   where (comm:args) = words command
 
 -- | Utility function to trim the ' in a string
 clean :: Char -> String -> String
-clean c cs = if isPrefixOf [c] cs then sanitize cs else cs
+clean c cs = if [c] `isPrefixOf` cs then sanitize cs else cs
   where sanitize = delChar . reverse . delChar . reverse
         delChar  = delete c
 
@@ -37,8 +38,8 @@ clean c cs = if isPrefixOf [c] cs then sanitize cs else cs
 logMsg :: String -> (String -> String) -> [String] -> [String]
 logMsg prefix f = (prefix :) . map f
 
--- | executes a given `IO a` action, catches and print to stderr any thrown
--- | exception, then return a defValue and continue execution
+-- | Executes a given `IO a` action, catches and print to stderr any thrown
+-- | exception, then returns a defValue and continues execution
 catchIO :: MonadIO m => IO a -> a -> m a
 catchIO ma defValue = liftIO (ma `catch` \(SomeException e) ->
                       hPrint stderr e >> hFlush stderr >> return defValue)
