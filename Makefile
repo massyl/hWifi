@@ -2,6 +2,7 @@ pr:
 	hub pull-request -b lambdatree:master
 
 install:
+	uname -a
 	sudo apt-get install -y haskell-platform
 	cabal --version
 	cabal update &&	cabal install cabal-install
