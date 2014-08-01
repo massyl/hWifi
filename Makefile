@@ -1,6 +1,3 @@
-VERSION=$$(cat hWifi.cabal | grep version: | head -1 | cut -d: -f2 | tr -d "[:blank:]")
-TEST_LOG=dist/test/hWifi-$(VERSION)-hunit.log
-
 pr:
 	hub pull-request -b lambdatree:master
 
@@ -28,8 +25,7 @@ run:
 	cabal run
 
 test:
-	cabal test
-	[ -f $(TEST_LOG) ] && cat $(TEST_LOG)
+	cabal test --show-details=always
 
 build:
 	cabal configure --enable-tests
