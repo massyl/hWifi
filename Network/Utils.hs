@@ -41,5 +41,5 @@ logMsg prefix f = (prefix :) . map f
 -- | Executes a given `IO a` action, catches and print to stderr any thrown
 -- | exception, then returns a defValue and continues execution
 catchIO :: MonadIO m => IO a -> a -> m a
-catchIO ma defValue = liftIO (ma `catch` \(SomeException e) ->
+catchIO ma defValue = liftIO (ma `Control.Exception.catch` \(SomeException e) ->
                       hPrint stderr e >> hFlush stderr >> return defValue)
