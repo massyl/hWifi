@@ -28,7 +28,8 @@ run:
 	cabal run
 
 test:
-	cabal test && [ -f $(TEST_LOG) ] && cat $(TEST_LOG)
+	cabal test
+	[ -f $(TEST_LOG) ] && cat $(TEST_LOG)
 
 build:
 	cabal configure --enable-tests
