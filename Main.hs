@@ -32,20 +32,9 @@ import Network.Types( SSID
                     , Command(..))
 import Network.HWifi ( runWifiMonad
                      , elect
-                     , alreadyUsed
-                     , available)
-
--- | Returns the available network wifi list and records any logged message
-availableWifisWithLogs :: Command -> IO ([SSID], [Log])
-availableWifisWithLogs = runWifiMonad . available
-
--- | Returns already used network wifi list and record any logged message.
-alreadyUsedWifisWithLogs :: Command -> IO ([SSID], [Log])
-alreadyUsedWifisWithLogs = runWifiMonad . alreadyUsed
-
--- | Connect to the wifi
-connectWifi :: Command -> SSID -> IO [SSID]
-connectWifi cmd = run . connect cmd
+                     , availableWifisWithLogs
+                     , alreadyUsedWifisWithLogs
+                     , connectWifiWithLogs)
 
 -- | Log informational
 output :: [Log]-> IO ()
