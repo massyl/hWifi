@@ -52,9 +52,9 @@ available (Scan cmd)  = runWithLog wifis log
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for 'alreadyUsed' function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog wifis log
-                          where log = logMsg "\n Auto-connect wifi: \n" ("- "++)
-                                readOutput = id
+                          where readOutput = id
                                 wifis = readOutput <$> run cmd
+                                log = logMsg "\n Auto-connect wifi: \n" ("- "++)
 
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter
