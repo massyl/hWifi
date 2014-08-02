@@ -21,8 +21,7 @@ import Data.Functor((<$>))
 import Data.List (intersect, sort)
 import Control.Monad.Writer hiding(mapM_)
 import Control.Arrow ((***), second)
-import Network.Utils(catchIO, clean, run, logMsg)
-import Control.Exception(evaluate)
+import Network.Utils(clean, run, logMsg)
 import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output)
 
 -- | Helper function, to run stack of monad transformers
@@ -68,19 +67,3 @@ connectWifi (Connect connectFn) ssid = runWithLog wifis log
 -- | This function throws an exception if you give an empty `wifis` parameter
 unsafeElect :: [SSID] -> [SSID] -> SSID
 unsafeElect wifis = head . intersect wifis
-
--- | Elects wifi safely (runs in `IO` monad)
-elect :: [SSID] -> [SSID] -> IO SSID
-elect wifis = (`catchIO` []) . evaluate . unsafeElect wifis
-
--- | Returns the available network wifi list and records any logged message
-availableWifisWithLogs :: Command -> IO ([SSID], [Log])
-availableWifisWithLogs = runWifiMonad . available
-
--- | Returns already used network wifi list and record any logged message.
-alreadyUsedWifisWithLogs :: Command -> IO ([SSID], [Log])
-alreadyUsedWifisWithLogs = runWifiMonad . alreadyUsed
-
--- | Connect to wifi
-connectWifiWithLogs :: Command -> SSID -> IO ([SSID], [Log])
-connectWifiWithLogs cmd ssid = runWifiMonad $ connectWifi cmd ssid

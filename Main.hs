@@ -23,7 +23,7 @@ module Main (main
 import Control.Monad(join)
 import Data.Functor((<$>))
 import Control.Applicative((<*>))
-import Network.Utils(run)
+import Network.Utils(catchIO)
 import Network.Nmcli( conCmd
                     , scanCmd
                     , knownCmd)
@@ -31,10 +31,27 @@ import Network.Types( SSID
                     , Log
                     , Command(..))
 import Network.HWifi ( runWifiMonad
-                     , elect
-                     , availableWifisWithLogs
-                     , alreadyUsedWifisWithLogs
-                     , connectWifiWithLogs)
+                     , unsafeElect
+                     , available
+                     , alreadyUsed
+                     , connectWifi)
+import Control.Exception(evaluate)
+
+-- | Elects wifi safely (runs in `IO` monad)
+elect :: [SSID] -> [SSID] -> IO SSID
+elect wifis = (`catchIO` []) . evaluate . unsafeElect wifis
+
+-- | Returns the available network wifi list and records any logged message
+availableWifisWithLogs :: Command -> IO ([SSID], [Log])
+availableWifisWithLogs = runWifiMonad . available
+
+-- | Returns already used network wifi list and record any logged message.
+alreadyUsedWifisWithLogs :: Command -> IO ([SSID], [Log])
+alreadyUsedWifisWithLogs = runWifiMonad . alreadyUsed
+
+-- | Connect to wifi
+connectWifiWithLogs :: Command -> SSID -> IO ([SSID], [Log])
+connectWifiWithLogs cmd ssid = runWifiMonad $ connectWifi cmd ssid
 
 -- | Log informational
 output :: [Log]-> IO ()
