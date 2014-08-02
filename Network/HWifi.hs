@@ -23,7 +23,7 @@ import Control.Monad.Writer hiding(mapM_)
 import Control.Arrow ((***), second)
 import Network.Utils(catchIO, clean, run, logMsg)
 import Control.Exception(evaluate)
-import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..))
+import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output)
 
 -- | Helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
@@ -33,18 +33,20 @@ runWifiMonad  = runWriterT
 available :: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
 available (Scan cmd)  = runWithLog wifis log
-                        where wifis = map (fst . second sort . parse) <$> run cmd
-                              log = logMsg "Scanned wifi: \n" ("- "++)
+                        where readOutput = map (fst . second sort . parse)
                               -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
-                              parse :: String -> Wifi
+                              parse :: Output -> Wifi
                               parse = (clean '\'' *** tail) . break (== ':')
+                              wifis = readOutput <$> run cmd
+                              log = logMsg "Scanned wifi: \n" ("- "++)
 
 -- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog wifis log
                           where log = logMsg "\n Auto-connect wifi: \n" ("- "++)
-                                wifis    = run cmd
+                                readOutput = id
+                                wifis = readOutput <$> run cmd
 
 -- | Runs a computation `comp`, get the result and logs the
 -- | application of `f` on it and then return this result.

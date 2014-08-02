@@ -7,6 +7,7 @@ type SSID   = String
 type Signal = String
 type Wifi   = (SSID, Signal)
 type Log    = String
+type Output = String
 
 -- | A CLI command to connect or scan wifi
 type CLICommand = String
