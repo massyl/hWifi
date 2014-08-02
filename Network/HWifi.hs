@@ -39,7 +39,7 @@ runWithLog comp logFn = do
 
 -- | Runs a given command, returns available wifis and reports any logged info.
 available :: Command -> WifiMonad [Log][SSID]
-available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
+available (Connect _) = tell ["Irrelevant Command Connect for 'available' function"] >> return []
 available (Scan cmd)  = runWithLog wifis log
                         where readOutput = map (fst . second sort . parse)
                               -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
@@ -50,7 +50,7 @@ available (Scan cmd)  = runWithLog wifis log
 
 -- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
-alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
+alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for 'alreadyUsed' function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog wifis log
                           where log = logMsg "\n Auto-connect wifi: \n" ("- "++)
                                 readOutput = id
