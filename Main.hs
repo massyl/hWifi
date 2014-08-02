@@ -49,8 +49,8 @@ main = do
   (knownWifis, log) <- alreadyUsedWifisWithLogs knownCmd
   output log
   let elected = elect knownWifis allWifis
-  _ <- join $ connectWifi conCmd <$> elected
-  elected >>= putStrLn . ("\n Elected Wifi: "++)
+  (_ , log) <- join $ connectWifiWithLogs conCmd <$> elected
+  output log
 
 -- | Returns available network wifis. It discards any logged message.
 availableWifis :: Command -> IO [SSID]
