@@ -56,6 +56,14 @@ alreadyUsed (Scan cmd)  = runWithLog wifis log
                                 wifis = readOutput <$> run cmd
                                 log = logMsg "\n Auto-connect wifi: \n" ("- "++)
 
+-- | Connect to wifi
+connectWifi :: Command -> SSID -> WifiMonad [Log][SSID]
+connectWifi (Scan _) _               = tell ["Irrelevant Command Scan for 'connectWifi' function"] >> return []
+connectWifi (Connect connectFn) ssid = runWithLog wifis log
+                                       where readOutput = id
+                                             wifis = readOutput <$> run $ connectFn ssid
+                                             log = logMsg ("\nConnection to wifi '" ++ ssid ++ "'") id
+
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter
 unsafeElect :: [SSID] -> [SSID] -> SSID
