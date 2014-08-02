@@ -29,6 +29,14 @@ import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output)
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
 
+-- | Runs a computation `comp`, get the result and logs the
+-- | application of `f` on it and then return this result.
+runWithLog :: (Monoid b) => IO a -> (a -> b) -> WifiMonad b a
+runWithLog comp f = do
+  result <- liftIO comp
+  tell $ f result
+  return result
+
 -- | Runs a given command, returns available wifis and reports any logged info.
 available :: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
@@ -47,14 +55,6 @@ alreadyUsed (Scan cmd)  = runWithLog wifis log
                           where log = logMsg "\n Auto-connect wifi: \n" ("- "++)
                                 readOutput = id
                                 wifis = readOutput <$> run cmd
-
--- | Runs a computation `comp`, get the result and logs the
--- | application of `f` on it and then return this result.
-runWithLog :: (Monoid b) => IO a -> (a -> b) -> WifiMonad b a
-runWithLog comp f = do
-  result <- liftIO comp
-  tell $ f result
-  return result
 
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter
