@@ -30,11 +30,11 @@ runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
 
 -- | Runs a computation `comp`, get the result and logs the
--- | application of `f` on it and then return this result.
+-- | application of `logFn` on it and then return the computation.
 runWithLog :: (Monoid b) => IO a -> (a -> b) -> WifiMonad b a
-runWithLog comp f = do
+runWithLog comp logFn = do
   result <- liftIO comp
-  tell $ f result
+  tell $ logFn result
   return result
 
 -- | Runs a given command, returns available wifis and reports any logged info.
