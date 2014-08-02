@@ -23,11 +23,11 @@ testCleanStrings = TestList ["testCleanString1" ~: testCleanString1
                              ,"testCleanString3" ~: testCleanString3
                              ,"testCleanString4" ~: testCleanString4]
 
-testSliceSSIDSignal1, testSliceSSIDSignal2, testSliceSSIDSignals :: Test.HUnit.Test
-testSliceSSIDSignal1 = ("ssid","signal") ~=? parse "ssid:signal"
-testSliceSSIDSignal2 = ("ssid", "signal") ~=? parse "'ssid':signal"
-testSliceSSIDSignals = TestList ["testSliceSSIDSignal1" ~: testSliceSSIDSignal1
-                                ,"testSliceSSIDSignal2" ~: testSliceSSIDSignal2]
+-- testSliceSSIDSignal1, testSliceSSIDSignal2, testSliceSSIDSignals :: Test.HUnit.Test
+-- testSliceSSIDSignal1 = ("ssid","signal") ~=? parse "ssid:signal"
+-- testSliceSSIDSignal2 = ("ssid", "signal") ~=? parse "'ssid':signal"
+-- testSliceSSIDSignals = TestList ["testSliceSSIDSignal1" ~: testSliceSSIDSignal1
+--                                 ,"testSliceSSIDSignal2" ~: testSliceSSIDSignal2]
 
 
 -- testWifiToConnect1 :: Test.HUnit.Test
@@ -60,7 +60,7 @@ tests :: Test.HUnit.Test
 tests = TestList [testCommandScanWifi
                   ,testKnownCommand
                   ,testCleanStrings
-                  ,testSliceSSIDSignals
+                  -- ,testSliceSSIDSignals
                   --,testSliceSSIDSignalss
                  -- ,testWifiToConnects
                   ,testConnectToWifiCommands

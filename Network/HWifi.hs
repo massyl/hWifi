@@ -29,22 +29,22 @@ import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..))
 runWifiMonad :: WifiMonad w a -> IO (a, w)
 runWifiMonad  = runWriterT
 
--- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
-parse :: String -> Wifi
-parse = (clean '\'' *** tail) . break (== ':')
-
 -- | Runs a given command, returns available wifis and reports any logged info.
 available :: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for available function"] >> return []
-available (Scan cmd)  = runWithLog allWifis logAll
-  where allWifis = map (fst . second sort . parse) <$> run cmd
-        logAll = logMsg "Scanned wifi: \n" ("- "++)
+available (Scan cmd)  = runWithLog wifis log
+                        where wifis = map (fst . second sort . parse) <$> run cmd
+                              log = logMsg "Scanned wifi: \n" ("- "++)
+                              -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
+                              parse :: String -> Wifi
+                              parse = (clean '\'' *** tail) . break (== ':')
 
 -- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for alreadyUsed function"] >> return []
-alreadyUsed (Scan cmd)  = runWithLog (run cmd) logKnown
-  where logKnown = logMsg "\n Auto-connect wifi: \n" ("- "++)
+alreadyUsed (Scan cmd)  = runWithLog wifis log
+                          where log = logMsg "\n Auto-connect wifi: \n" ("- "++)
+                                wifis    = run cmd
 
 -- | Runs a computation `comp`, get the result and logs the
 -- | application of `f` on it and then return this result.
