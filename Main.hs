@@ -65,8 +65,7 @@ main = do
   output log
   (knownWifis, log) <- alreadyUsedWifisWithLogs knownCmd
   output log
-  let elected = elect knownWifis allWifis
-  (_ , log) <- join $ connectWifiWithLogs conCmd <$> elected
+  (_ , log) <- join $ connectWifiWithLogs conCmd <$> elect knownWifis allWifis
   output log
 
 -- | Returns available network wifis. It discards any logged message.
