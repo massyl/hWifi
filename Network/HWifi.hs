@@ -59,7 +59,7 @@ alreadyUsed (Scan cmd)  = runWithLog wifis log
                                 wifis :: IO [SSID]
                                 wifis = readOutput <$> run cmd
                                 log :: [SSID] -> [Log]
-                                log = logMsg "\n Auto-connect wifi: \n" ("- "++)
+                                log = logMsg "\nAuto-connect wifi: \n" ("- "++)
 
 -- | Connect to wifi
 connectWifi :: Command -> SSID -> WifiMonad [Log][SSID]
