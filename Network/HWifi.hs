@@ -40,13 +40,13 @@ runWithLog comp logFn = do
 available :: Command -> WifiMonad [Log][SSID]
 available (Connect _) = tell ["Irrelevant Command Connect for 'available' function"] >> return []
 available (Scan cmd)  = runWithLog wifis log
-                        where readOutput :: [SSID] -> [SSID]
-                              readOutput = map (fst . second sort . parse)
+                        where parseOutput :: [SSID] -> [SSID]
+                              parseOutput = map (fst . second sort . parse)
                                            where -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
                                                  parse :: Output -> Wifi
                                                  parse = (clean '\'' *** tail) . break (== ':')
                               wifis :: IO [SSID]
-                              wifis = readOutput <$> run cmd
+                              wifis = parseOutput <$> run cmd
                               log :: [SSID] -> [Log]
                               log = logMsg "Scanned wifi: \n" ("- "++)
 
@@ -54,10 +54,10 @@ available (Scan cmd)  = runWithLog wifis log
 alreadyUsed :: Command -> WifiMonad [Log][SSID]
 alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for 'alreadyUsed' function"] >> return []
 alreadyUsed (Scan cmd)  = runWithLog wifis log
-                          where readOutput :: [SSID] -> [SSID]
-                                readOutput = id
+                          where parseOutput :: [SSID] -> [SSID]
+                                parseOutput = id
                                 wifis :: IO [SSID]
-                                wifis = readOutput <$> run cmd
+                                wifis = parseOutput <$> run cmd
                                 log :: [SSID] -> [Log]
                                 log = logMsg "\nAuto-connect wifi: \n" ("- "++)
 
@@ -65,10 +65,10 @@ alreadyUsed (Scan cmd)  = runWithLog wifis log
 connectWifi :: Command -> SSID -> WifiMonad [Log][SSID]
 connectWifi (Scan _) _               = tell ["Irrelevant Command Scan for 'connectWifi' function"] >> return []
 connectWifi (Connect connectFn) ssid = runWithLog wifis log
-                                       where readOutput :: [SSID] -> [SSID]
-                                             readOutput = id
+                                       where parseOutput :: [SSID] -> [SSID]
+                                             parseOutput = id
                                              wifis :: IO [SSID]
-                                             wifis = readOutput <$> run (connectFn ssid)
+                                             wifis = parseOutput <$> run (connectFn ssid)
                                              log :: [SSID] -> [Log]
                                              log = logMsg ("\nConnection to wifi '" ++ ssid ++ "'") id
 
