@@ -68,7 +68,7 @@ main = do
   output msg1
   (result, msg2)     <- join $ connectWifiWithLogs conCmd <$> elect knownWifis allWifis
   case result of
-    Left err -> putStrLn "" >> print err
+    Left err -> putStrLn $ "\nError: " ++ show err
     Right _  -> output msg2
 
 -- | Returns available network wifis. It discards any logged message.
