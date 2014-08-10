@@ -29,9 +29,9 @@ data CommandError = BadCommand String
                   | Default String
 
 instance Show CommandError where
-  show NoWifiAvailable            = "No available wifis"
+  show NoWifiAvailable            = "No known wifi available!"
   show (BadCommand cmd)           = "'" ++ cmd ++ "' is not a valid command."
-  show (ConnectionError wifiSSID) = "Error during connection to '" ++ wifiSSID ++ "'"
+  show (ConnectionError wifiSSID) = "Error during connection to '" ++ wifiSSID ++ "'."
   show (Default msg)              = msg
 
 instance Error CommandError where
