@@ -21,8 +21,8 @@ import Data.Functor((<$>))
 import Data.List (intersect, sort)
 import Control.Monad.Writer hiding(mapM_)
 import Control.Arrow ((***), second)
-import Network.Utils(clean, run, logMsg)
-import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output)
+import Network.Utils(clean, run, formatMsg)
+import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output, CommandError(..), ThrowsError)
 
 -- | Helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
@@ -37,42 +37,42 @@ runWithLog comp logFn = do
   return result
 
 -- | Runs a given command, returns available wifis and reports any logged info.
-available :: Command -> WifiMonad [Log][SSID]
-available (Connect _) = tell ["Irrelevant Command Connect for 'available' function"] >> return []
-available (Scan cmd)  = runWithLog wifis log
-                        where parseOutput :: [SSID] -> [SSID]
-                              parseOutput = map (fst . second sort . parse)
+available :: Command -> WifiMonad [Log](ThrowsError [SSID])
+available (Scan cmd)  = runWithLog wifis logMsg
+                        where parseOutput :: ThrowsError [SSID] -> ThrowsError [SSID]
+                              parseOutput input = case input of
+                                Left err    -> Left err
+                                Right ssids -> Right $ map (fst . second sort . parse) ssids
                                            where -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
                                                  parse :: Output -> Wifi
                                                  parse = (clean '\'' *** tail) . break (== ':')
-                              wifis :: IO [SSID]
+                              wifis :: IO (ThrowsError [SSID])
                               wifis = parseOutput <$> run cmd
-                              log :: [SSID] -> [Log]
-                              log = logMsg "Scanned wifi: \n" ("- "++)
+                              logMsg :: ThrowsError [SSID] -> [Log]
+                              logMsg = formatMsg "Scanned wifi: \n" ("- "++)
 
--- | Returns already used wifis and reports any logged info.
-alreadyUsed :: Command -> WifiMonad [Log][SSID]
-alreadyUsed (Connect _) = tell ["Irrelevant Command Connect for 'alreadyUsed' function"] >> return []
-alreadyUsed (Scan cmd)  = runWithLog wifis log
-                          where parseOutput :: [SSID] -> [SSID]
-                                parseOutput = id
-                                wifis :: IO [SSID]
+-- -- | Returns already used wifis and reports any logged info.
+alreadyUsed :: Command -> WifiMonad [Log](ThrowsError [SSID])
+alreadyUsed (Scan cmd)  = runWithLog wifis logMsg
+                          where parseOutput = id
                                 wifis = parseOutput <$> run cmd
-                                log :: [SSID] -> [Log]
-                                log = logMsg "\nAuto-connect wifi: \n" ("- "++)
+                                logMsg = formatMsg "\nAuto-connect wifi: \n" ("- "++)
 
--- | Connect to wifi
-connectWifi :: Command -> SSID -> WifiMonad [Log][SSID]
-connectWifi (Scan _) _               = tell ["Irrelevant Command Scan for 'connectWifi' function"] >> return []
-connectWifi (Connect connectFn) ssid = runWithLog wifis log
-                                       where parseOutput :: [SSID] -> [SSID]
-                                             parseOutput = id
-                                             wifis :: IO [SSID]
-                                             wifis = parseOutput <$> run (connectFn ssid)
-                                             log :: [SSID] -> [Log]
-                                             log = logMsg ("\nConnection to wifi '" ++ ssid ++ "'") id
+-- -- | Connect to wifi
+connectWifi :: Command -> ThrowsError SSID -> WifiMonad [Log](ThrowsError [SSID])
+connectWifi _ (Left err)                     = return $ Left err
+connectWifi (Connect connectFn) (Right ssid) =
+  runWithLog wifis logMsg
+  where parseOutput = id
+        wifis = parseOutput <$> run (connectFn ssid)
+        logMsg = formatMsg ("\nConnection to wifi '" ++ ssid ++ "'") id
 
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter
-unsafeElect :: [SSID] -> [SSID] -> SSID
-unsafeElect wifis = head . intersect wifis
+unsafeElect :: ThrowsError [SSID] -> ThrowsError [SSID] -> ThrowsError SSID
+unsafeElect (Left m)     _                   = Left m
+unsafeElect _            (Left m)            = Left m
+unsafeElect (Right [])   _                   = Left NoWifiAvailable
+unsafeElect (Right wifis) (Right knownsWifi) = case wifis `intersect` knownsWifi of
+  []    -> Left NoWifiAvailable
+  (x:_) -> Right x

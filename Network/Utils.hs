@@ -21,11 +21,12 @@ import Data.Functor((<$>))
 import Control.Exception (catch, SomeException(..))
 import Control.Monad.Trans (MonadIO, liftIO)
 import System.IO(stderr, hFlush, hPrint)
+import Network.Types (ThrowsError, CommandError(..))
 
--- | Runs a command and displays the output as a string list
-run :: String -> IO [String]
-run []      = return []
-run command = lines <$> readProcess comm args [] `catchIO` []
+-- | Runs a command and returns the output as a string list
+run :: String -> IO (ThrowsError [String])
+run c@[]    = return $ Left $ BadCommand c
+run command = (return . lines <$> readProcess comm args []) `catchIO` (Left $ BadCommand command)
   where (comm:args) = words command
 
 -- | Utility function to trim the ' in a string
@@ -34,9 +35,11 @@ clean c cs = if [c] `isPrefixOf` cs then sanitize cs else cs
   where sanitize = delChar . reverse . delChar . reverse
         delChar  = delete c
 
--- | TODO rename this function to more relevant name
-logMsg :: String -> (String -> String) -> [String] -> [String]
-logMsg prefix f = (prefix :) . map f
+-- | Format the message
+formatMsg :: String -> (String -> String) -> ThrowsError [String] -> [String]
+formatMsg prefix f inputs = case inputs of
+  Left err  -> [show err]
+  Right val -> (prefix :) . map f $ val
 
 -- | Executes a given `IO a` action, catches and print to stderr any thrown
 -- | exception, then returns a defValue and continues execution
