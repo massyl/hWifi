@@ -66,8 +66,10 @@ main = do
   output msg0
   (knownWifis, msg1) <- alreadyUsedWifisWithLogs knownCmd
   output msg1
-  (_ , msg2) <- join $ connectWifiWithLogs conCmd <$> elect knownWifis allWifis
-  output msg2
+  (result, msg2)     <- join $ connectWifiWithLogs conCmd <$> elect knownWifis allWifis
+  case result of
+    Left err -> putStrLn "" >> print err
+    Right _  -> output msg2
 
 -- | Returns available network wifis. It discards any logged message.
 availableWifis :: Command -> IO (ThrowsError [SSID])
