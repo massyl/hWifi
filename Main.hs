@@ -29,7 +29,6 @@ import Network.Nmcli( conCmd
 import Network.Types( SSID
                     , Log
                     , Command(..)
-                    , CommandError(..)
                     , ThrowsError)
 import Network.HWifi ( runWifiMonad
                      , unsafeElect
