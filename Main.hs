@@ -23,7 +23,6 @@ module Main (main
 import Control.Monad(join)
 import Data.Functor((<$>))
 import Control.Applicative((<*>))
-import Network.Utils(catchIO)
 import Network.Nmcli( conCmd
                     , scanCmd
                     , knownCmd)
