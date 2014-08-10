@@ -36,7 +36,7 @@ import Network.HWifi ( runWifiMonad
                      , available
                      , alreadyUsed
                      , connectWifi)
-import Control.Exception(evaluate)
+import Control.Exception (evaluate)
 
 -- | Elects wifi safely (runs in `IO` monad)
 elect :: ThrowsError [SSID] -> ThrowsError [SSID] -> IO (ThrowsError SSID)
