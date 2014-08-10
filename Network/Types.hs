@@ -25,11 +25,15 @@ instance Show Command where
 
 data CommandError = BadCommand String
                   | NoWifiAvailable
+                  | ScanWifiError
+                  | KnownWifiError
                   | ConnectionError String
                   | Default String
 
 instance Show CommandError where
   show NoWifiAvailable            = "No known wifi available!"
+  show ScanWifiError              = "Scan wifi error."
+  show KnownWifiError             = "List known wifi error."
   show (BadCommand cmd)           = "'" ++ cmd ++ "' is not a valid command."
   show (ConnectionError wifiSSID) = "Error during connection to '" ++ wifiSSID ++ "'."
   show (Default msg)              = msg

@@ -21,7 +21,7 @@ import Data.Functor((<$>))
 import Data.List (intersect, sort)
 import Control.Monad.Writer hiding(mapM_)
 import Control.Arrow ((***), second)
-import Network.Utils(clean, run, formatMsg)
+import Network.Utils(clean, run, formatMsg, catchIO)
 import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output, CommandError(..), ThrowsError)
 
 -- | Helper function, to run stack of monad transformers
@@ -47,7 +47,7 @@ available (Scan cmd)  = runWithLog wifis logMsg
                                                  parse :: Output -> Wifi
                                                  parse = (clean '\'' *** tail) . break (== ':')
                               wifis :: IO (ThrowsError [SSID])
-                              wifis = parseOutput <$> run cmd
+                              wifis = parseOutput <$> run cmd `catchIO` Left ScanWifiError
                               logMsg :: ThrowsError [SSID] -> [Log]
                               logMsg = formatMsg "Scanned wifi: \n" ("- "++)
 
@@ -55,7 +55,7 @@ available (Scan cmd)  = runWithLog wifis logMsg
 alreadyUsed :: Command -> WifiMonad [Log](ThrowsError [SSID])
 alreadyUsed (Scan cmd)  = runWithLog wifis logMsg
                           where parseOutput = id
-                                wifis = parseOutput <$> run cmd
+                                wifis = parseOutput <$> run cmd `catchIO` Left KnownWifiError
                                 logMsg = formatMsg "\nAuto-connect wifi: \n" ("- "++)
 
 -- -- | Connect to wifi
@@ -64,7 +64,7 @@ connectWifi _ (Left err)                     = return $ Left err
 connectWifi (Connect connectFn) (Right ssid) =
   runWithLog wifis logMsg
   where parseOutput = id
-        wifis = parseOutput <$> run (connectFn ssid)
+        wifis = parseOutput <$> run (connectFn ssid) `catchIO` (Left $ ConnectionError ssid)
         logMsg = formatMsg ("\nConnection to wifi '" ++ ssid ++ "'") id
 
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
