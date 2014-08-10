@@ -61,21 +61,21 @@ output = mapM_ putStrLn
 -- Determine the highest known wifi signal and connect to it
 main :: IO ()
 main = do
-  (allWifis, log)   <- availableWifisWithLogs scanCmd
-  output log
-  (knownWifis, log) <- alreadyUsedWifisWithLogs knownCmd
-  output log
-  (_ , log) <- join $ connectWifiWithLogs conCmd <$> elect knownWifis allWifis
-  output log
+  (allWifis, msg0)   <- availableWifisWithLogs scanCmd
+  output msg0
+  (knownWifis, msg1) <- alreadyUsedWifisWithLogs knownCmd
+  output msg1
+  (_ , msg2) <- join $ connectWifiWithLogs conCmd <$> elect knownWifis allWifis
+  output msg2
 
 -- | Returns available network wifis. It discards any logged message.
 availableWifis :: Command -> IO [SSID]
-availableWifis scanCmd = fst <$> availableWifisWithLogs scanCmd
+availableWifis scanCommand = fst <$> availableWifisWithLogs scanCommand
 
 -- | Returns already used network wifis. It discards any logged message.
 alreadyUsedWifis :: Command -> IO [SSID]
-alreadyUsedWifis knownCmd = fst <$> alreadyUsedWifisWithLogs knownCmd
+alreadyUsedWifis knownCommand = fst <$> alreadyUsedWifisWithLogs knownCommand
 
 -- | Returns elected wifi (wifi already known, available, with highest signal).
 electedWifi :: Command -> Command -> IO SSID
-electedWifi scanCmd knownCmd = join $ elect <$> alreadyUsedWifis knownCmd <*> availableWifis scanCmd
+electedWifi scanCommand knownCommand = join $ elect <$> alreadyUsedWifis knownCommand <*> availableWifis scanCommand
