@@ -23,43 +23,59 @@ module Main (main
 import Control.Monad(join)
 import Data.Functor((<$>))
 import Control.Applicative((<*>))
-import Network.Utils(run)
-import Network.Nmcli(conCmd, scanCmd, knownCmd)
-import Network.Types(SSID, Log, Command(..))
-import Network.HWifi (runWifiMonad,
-                      elect,
-                      alreadyUsed,
-                      available)
+import Network.Utils(catchIO)
+import Network.Nmcli( conCmd
+                    , scanCmd
+                    , knownCmd)
+import Network.Types( SSID
+                    , Log
+                    , Command(..))
+import Network.HWifi ( runWifiMonad
+                     , unsafeElect
+                     , available
+                     , alreadyUsed
+                     , connectWifi)
+import Control.Exception(evaluate)
+
+-- | Elects wifi safely (runs in `IO` monad)
+elect :: [SSID] -> [SSID] -> IO SSID
+elect wifis = (`catchIO` []) . evaluate . unsafeElect wifis
 
 -- | Returns the available network wifi list and records any logged message
-availableWifisWithLogs :: IO ([SSID], [Log])
-availableWifisWithLogs =  runWifiMonad $ available scanCmd
-
--- | Returns available network wifis. It discards any logged message.
-availableWifis :: IO [SSID]
-availableWifis = fst <$> availableWifisWithLogs
+availableWifisWithLogs :: Command -> IO ([SSID], [Log])
+availableWifisWithLogs = runWifiMonad . available
 
 -- | Returns already used network wifi list and record any logged message.
-alreadyUsedWifisWithLogs :: IO ([SSID], [Log])
-alreadyUsedWifisWithLogs = runWifiMonad $ alreadyUsed knownCmd
+alreadyUsedWifisWithLogs :: Command -> IO ([SSID], [Log])
+alreadyUsedWifisWithLogs = runWifiMonad . alreadyUsed
 
--- | Returns already used network wifis. It discards any logged message.
-alreadyUsedWifis :: IO [SSID]
-alreadyUsedWifis = fst <$> alreadyUsedWifisWithLogs
+-- | Connect to wifi
+connectWifiWithLogs :: Command -> SSID -> IO ([SSID], [Log])
+connectWifiWithLogs cmd ssid = runWifiMonad $ connectWifi cmd ssid
 
--- | Returns elected wifi (wifi already known, available, with highest signal).
-electedWifi :: IO SSID
-electedWifi = join $ elect <$> alreadyUsedWifis <*> availableWifis
+-- | Log informational
+output :: [Log]-> IO ()
+output = mapM_ putStrLn
 
-logAll:: [Log]-> IO ()
-logAll = mapM_ putStrLn
-
+-- | Main orchestrator
+-- Determine the highest known wifi signal and connect to it
 main :: IO ()
 main = do
-  (allWifis, msg1)   <- availableWifisWithLogs
-  logAll msg1
-  (knownWifis, msg2) <- alreadyUsedWifisWithLogs
-  logAll msg2
-  let elected = elect knownWifis allWifis
-  _ <- join $ run . connect conCmd <$> elected
-  elected >>= putStrLn . ("\n Elected Wifi: "++)
+  (allWifis, msg0)   <- availableWifisWithLogs scanCmd
+  output msg0
+  (knownWifis, msg1) <- alreadyUsedWifisWithLogs knownCmd
+  output msg1
+  (_ , msg2) <- join $ connectWifiWithLogs conCmd <$> elect knownWifis allWifis
+  output msg2
+
+-- | Returns available network wifis. It discards any logged message.
+availableWifis :: Command -> IO [SSID]
+availableWifis scanCommand = fst <$> availableWifisWithLogs scanCommand
+
+-- | Returns already used network wifis. It discards any logged message.
+alreadyUsedWifis :: Command -> IO [SSID]
+alreadyUsedWifis knownCommand = fst <$> alreadyUsedWifisWithLogs knownCommand
+
+-- | Returns elected wifi (wifi already known, available, with highest signal).
+electedWifi :: Command -> Command -> IO SSID
+electedWifi scanCommand knownCommand = join $ elect <$> alreadyUsedWifis knownCommand <*> availableWifis scanCommand
