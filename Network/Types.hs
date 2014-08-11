@@ -29,6 +29,7 @@ data CommandError = BadCommand String
                   | KnownWifiError
                   | ConnectionError String
                   | Default String
+                  deriving Eq
 
 instance Show CommandError where
   show NoWifiAvailable            = "No known wifi available!"
