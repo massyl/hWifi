@@ -2,9 +2,10 @@ module Main where
 
 import Test.HUnit
 import Network.HWifi
-import Network.Utils
 import Network.Nmcli
 import Network.Types
+import Network.Utils ( run
+                     , clean)
 
 quote::Char
 quote = '\''
@@ -44,6 +45,18 @@ testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1
                           ,"testElectWifi5" ~: testElectWifi5
                           ]
 
+testRun0, testRun1, testRuns :: Test.HUnit.Test
+testRun0 = TestCase $ do result <- run ""
+                         assertEqual "Bad command - empty command" (Left $ BadCommand "") result
+testRun1 = TestCase $ do result <- run "ls -"
+                         assertEqual "Bad command - incorrect command" (Left $ BadCommand "ls -") result
+testRun2 = TestCase $ do result <- run "echo hello"
+                         assertEqual "Retrieve output from the command" (Right ["hello"]) result
+testRuns = TestList [ "testRun0" ~: testRun0
+                    , "testRun1" ~: testRun1
+                    , "testRun2" ~: testRun2
+                    ]
+
 -- Full tests
 tests :: Test.HUnit.Test
 tests = TestList [testCommandScanWifi
@@ -53,7 +66,8 @@ tests = TestList [testCommandScanWifi
                   --,testSliceSSIDSignalss
                  -- ,testWifiToConnects
                   ,testConnectToWifiCommands
-                  ,testElectWifis]
+                  ,testElectWifis
+                  ,testRuns]
 
 main :: IO ()
 main = runTestTT tests >>= print
