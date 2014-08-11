@@ -50,7 +50,7 @@ testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1
 testRun0, testRun1, testRuns :: Test.HUnit.Test
 testRun0 = TestCase $ run "" >>= assertEqual "Bad command - empty command" (Left $ BadCommand "")
 testRun1 = TestCase $ run "ls -" >>= assertEqual "Bad command - incorrect command" (Left $ BadCommand "ls -")
-testRun2 = TestCase $ run "echo hello" >>= assertEqual "Retrieve output from the command" (Right ["hello"])
+testRun2 = TestCase $ run "echo 'tatooine':75\n'myrkr':90" >>= assertEqual "Retrieve output from the command" (Right ["'tatooine':75","'myrkr':90"])
 testRuns = TestList [ "testRun0" ~: testRun0
                     , "testRun1" ~: testRun1
                     , "testRun2" ~: testRun2
