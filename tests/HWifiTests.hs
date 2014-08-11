@@ -5,7 +5,8 @@ import Network.HWifi
 import Network.Nmcli
 import Network.Types
 import Network.Utils ( run
-                     , clean)
+                     , clean
+                     , formatMsg)
 
 quote::Char
 quote = '\''
@@ -57,17 +58,24 @@ testRuns = TestList [ "testRun0" ~: testRun0
                     , "testRun2" ~: testRun2
                     ]
 
+testFormatMsg0, testFormatMsgs :: Test.HUnit.Test
+testFormatMsg0 = ["No known wifi available!"] ~=? formatMsg "" id (Left NoWifiAvailable)
+testFormatMsg1 = [ "prefix string: "
+                 , "- input 0"
+                 , "- input 1"] ~=? formatMsg "prefix string: " ("- " ++) (Right ["input 0", "input 1"])
+testFormatMsgs = TestList [ "testFormatMsg0" ~: testFormatMsg0
+                          , "testFormatMsg1" ~: testFormatMsg1
+                          ]
+
 -- Full tests
 tests :: Test.HUnit.Test
-tests = TestList [testCommandScanWifi
-                  ,testKnownCommand
-                  ,testCleanStrings
-                  -- ,testSliceSSIDSignals
-                  --,testSliceSSIDSignalss
-                 -- ,testWifiToConnects
-                  ,testConnectToWifiCommands
-                  ,testElectWifis
-                  ,testRuns]
+tests = TestList [ testCommandScanWifi
+                 , testKnownCommand
+                 , testCleanStrings
+                 , testConnectToWifiCommands
+                 , testElectWifis
+                 , testRuns
+                 , testFormatMsgs]
 
 main :: IO ()
 main = runTestTT tests >>= print
