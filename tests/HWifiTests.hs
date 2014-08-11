@@ -73,6 +73,17 @@ testSplit2 = split "x"    "x"                ~=? ["",""]
 testSplits = TestList [ "testSplit0" ~: testSplit0
                       , "testSplit1" ~: testSplit1
                       , "testSplit2" ~: testSplit2]
+
+-- Not working yet!
+-- testAvailable0, testAvailables :: Test.HUnit.Test
+-- testAvailable0 = runWifiMonad $ available (Scan "echo 'tatooine':75\n'myrkr':90") >>=
+--                     \ (value, log) ->
+--                       assertEqual "Log should be"   ["Scanned wifi: \n","- tatooine","- myrkr"] log
+--                       assertEqual "value should be" (Right ["tatooine","myrkr"]) value
+
+-- testAvailables = TestList [ "testAvailable0" ~: testAvailable0
+--                           ]
+
 -- Full tests
 tests :: Test.HUnit.Test
 tests = TestList [ testCommandScanWifi
@@ -82,7 +93,9 @@ tests = TestList [ testCommandScanWifi
                  , testElectWifis
                  , testRuns
                  , testFormatMsgs
-                 , testSplits]
+                 , testSplits
+                 -- , testAvailables
+                 ]
 
 main :: IO ()
 main = runTestTT tests >>= print
