@@ -15,6 +15,7 @@ module Network.Utils where
 --
 -----------------------------------------------------------------------------
 
+import qualified Data.Text as T
 import System.Process (readProcess)
 import Data.List (delete, isPrefixOf)
 import Data.Functor((<$>))
@@ -23,11 +24,15 @@ import Control.Monad.Trans (MonadIO, liftIO)
 import System.IO(stderr, hFlush, hPrint)
 import Network.Types (ThrowsError, CommandError(..))
 
+-- | Split string s on `sep` string
+split :: String -> String -> [String]
+split sep s = map T.unpack $ T.splitOn (T.pack sep) (T.pack s)
+
 -- | Runs a command and returns the output as a string list
 run :: String -> IO (ThrowsError [String])
 run c@[]    = return $ Left $ BadCommand c
 run command = (return . lines <$> readProcess comm args []) `catchIO` (Left $ BadCommand command)
-  where (comm:args) = words command
+  where (comm:args) = split " " command
 
 -- | Utility function to trim the ' in a string
 clean :: Char -> String -> String

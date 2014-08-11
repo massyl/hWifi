@@ -6,7 +6,8 @@ import Network.Nmcli
 import Network.Types
 import Network.Utils ( run
                      , clean
-                     , formatMsg)
+                     , formatMsg
+                     , split)
 
 quote::Char
 quote = '\''
@@ -64,6 +65,14 @@ testFormatMsgs = TestList [ "testFormatMsg0" ~: testFormatMsg0
                           , "testFormatMsg1" ~: testFormatMsg1
                           ]
 
+testSplit0, testSplit1, testSplit2, testSplits :: Test.HUnit.Test
+testSplit0 = split "\r\n" "a\r\nb\r\nd\r\ne" ~=? ["a","b","d","e"]
+testSplit1 = split "aaa"  "aaaXaaaXaaaXaaa"  ~=? ["","X","X","X",""]
+testSplit2 = split "x"    "x"                ~=? ["",""]
+
+testSplits = TestList [ "testSplit0" ~: testSplit0
+                      , "testSplit1" ~: testSplit1
+                      , "testSplit2" ~: testSplit2]
 -- Full tests
 tests :: Test.HUnit.Test
 tests = TestList [ testCommandScanWifi
@@ -72,7 +81,8 @@ tests = TestList [ testCommandScanWifi
                  , testConnectToWifiCommands
                  , testElectWifis
                  , testRuns
-                 , testFormatMsgs]
+                 , testFormatMsgs
+                 , testSplits]
 
 main :: IO ()
 main = runTestTT tests >>= print
