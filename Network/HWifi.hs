@@ -46,7 +46,7 @@ available (Scan cmd)  = runWithLog wifis logMsg
                                 Right ssids -> Right $ (map fst . sortBy (flip compare `on` snd) . map parse) ssids
                                            where -- | Slice a string "'wifi':signal" in a tuple ("wifi", signal)
                                                  parse :: Output -> Wifi
-                                                 parse = (\ (x, y) -> (x, read y :: Signal)) . (clean '\'' *** tail) . break (== ':')
+                                                 parse = (clean '\'' *** (\ y -> (read . tail) y :: Integer)) . break (== ':')
                               wifis :: IO (ThrowsError [SSID])
                               wifis = parseOutput <$> run cmd `catchIO` Left ScanWifiError
                               logMsg :: ThrowsError [SSID] -> [Log]
