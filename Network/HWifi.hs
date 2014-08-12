@@ -42,7 +42,7 @@ available :: Command -> WifiMonad [Log](ThrowsError [SSID])
 available (Scan cmd)  = runWithLog wifis logMsg
                         where parseOutput :: ThrowsError [SSID] -> ThrowsError [SSID]
                               parseOutput input = case input of
-                                Left err    -> Left err
+                                e@(Left _)  -> e
                                 Right ssids -> Right $ (map fst . sortBy (flip compare `on` snd) . map parse) ssids
                                            where -- | Slice a string "'wifi':signal" in a tuple ("wifi", signal)
                                                  parse :: Output -> Wifi
