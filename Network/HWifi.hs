@@ -37,7 +37,7 @@ runWithLog comp logFn = do
   tell $ logFn result
   return result
 
--- -- | Runs a given command, returns available wifis and reports any logged info.
+-- | Runs a given command, returns available wifis and reports any logged info.
 available :: Command -> WifiMonad [Log](ThrowsError [SSID])
 available (Scan cmd)  = runWithLog wifis logMsg
                         where parseOutput :: ThrowsError [SSID] -> ThrowsError [SSID]
@@ -52,14 +52,14 @@ available (Scan cmd)  = runWithLog wifis logMsg
                               logMsg :: ThrowsError [SSID] -> [Log]
                               logMsg = formatMsg "Scanned wifi: \n" ("- "++)
 
--- -- | Returns already used wifis and reports any logged info.
+-- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log](ThrowsError [SSID])
 alreadyUsed (Scan cmd)  = runWithLog wifis logMsg
                           where parseOutput = id
                                 wifis = parseOutput <$> run cmd `catchIO` Left KnownWifiError
                                 logMsg = formatMsg "\nAuto-connect wifi: \n" ("- "++)
 
--- -- | Connect to wifi
+-- | Connect to wifi
 connectWifi :: Command -> ThrowsError SSID -> WifiMonad [Log](ThrowsError [SSID])
 connectWifi _ (Left err)                     = return $ Left err
 connectWifi (Connect connectFn) (Right ssid) =
