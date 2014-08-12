@@ -68,14 +68,17 @@ testSplits =
            , "testSplit2" ~: split "x"    "x"                ~=? ["",""]
            ]
 
-testAvailable0 = do
-  (value, log) <- runWifiMonad $ available (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
-  assertEqual "Log should be"   ["Scanned wifi: \n","- myrkr","- tatooine","- arrakis"] log
-  assertEqual "value should be" (Right ["myrkr","tatooine","arrakis"]) value
-  return ()
-
 testAvailables :: Test.HUnit.Test
-testAvailables = TestList [ "testAvailable0" ~: testAvailable0
+testAvailables = TestList [ "Retrieve the available wifi list." ~: do
+                               (value, log) <- runWifiMonad $ available (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
+                               assertEqual "Log should be"   ["Scanned wifi: \n","- myrkr","- tatooine","- arrakis"] log
+                               assertEqual "value should be" (Right ["myrkr","tatooine","arrakis"]) value
+                               return ()
+                          , "A bad command is executed and caught then sent back" ~: do
+                               (value, log) <- runWifiMonad $ available (Scan "bad-command")
+                               assertEqual "Log should be"   ["'bad-command' is not a valid command."] log
+                               assertEqual "value should be" (Left $ BadCommand "bad-command") value
+                               return ()
                           ]
 
 -- Full tests
