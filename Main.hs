@@ -78,6 +78,6 @@ availableWifis scanCommand = fst <$> availableWifisWithLogs scanCommand
 alreadyUsedWifis :: Command -> IO (ThrowsError [SSID])
 alreadyUsedWifis knownCommand = fst <$> alreadyUsedWifisWithLogs knownCommand
 
--- -- | Returns elected wifi (wifi already known, available, with highest signal).
+-- | Returns elected wifi (wifi already known, available, with highest signal).
 electedWifi :: Command -> Command -> IO (ThrowsError SSID)
 electedWifi scanCommand knownCommand = join $ elect <$> alreadyUsedWifis knownCommand <*> availableWifis scanCommand
