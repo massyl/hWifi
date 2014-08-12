@@ -94,6 +94,24 @@ testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
                                   return ()
                                   ]
 
+testConnectWifis :: Test.HUnit.Test
+testConnectWifis = TestList [ "Error is transmitted" ~: do
+                                 (value, log) <- runWifiMonad $ connectWifi (Scan "not-used-command") (Left $ BadCommand "echo")
+                                 assertEqual "Log should be" [] log
+                                 assertEqual "value should be" (Left $ BadCommand "echo") value
+                                 return ()
+                            , "A wifi is provided and the connection should be ok" ~: do
+                                 (value, log) <- runWifiMonad $ connectWifi (Connect ("echo connection " ++)) (Right "wifi-ssid")
+                                 assertEqual "Log should be" ["\nConnection to wifi 'wifi-ssid'","connection wifi-ssid"] log
+                                 assertEqual "value should be" (Right ["connection wifi-ssid"]) value
+                                 return ()
+                            , "Bad command is provided. This should break." ~: do
+                                 (value, log) <- runWifiMonad $ connectWifi (Connect ("bad-command " ++)) (Right "wifi-ssid")
+                                 assertEqual "Log should be" ["'bad-command wifi-ssid' is not a valid command."] log
+                                 assertEqual "value should be" (Left $ BadCommand "bad-command wifi-ssid") value
+                                 return ()
+                            ]
+
 -- Full tests
 tests :: Test.HUnit.Test
 tests = TestList [ testCommandScanWifi
@@ -106,6 +124,7 @@ tests = TestList [ testCommandScanWifi
                  , testSplits
                  , testAvailables
                  , testAlreadyKnowns
+                 , testConnectWifis
                  ]
 
 main :: IO ()
