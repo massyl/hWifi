@@ -69,9 +69,9 @@ testSplits =
            ]
 
 testAvailable0 = do
-  (value, log) <- runWifiMonad $ available (Scan "echo 'tatooine':98\n'myrkr':100")
-  assertEqual "Log should be"   ["Scanned wifi: \n","- tatooine","- myrkr"] log
-  assertEqual "value should be" (Right ["myrkr","tatooine"]) value
+  (value, log) <- runWifiMonad $ available (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
+  assertEqual "Log should be"   ["Scanned wifi: \n","- myrkr","- tatooine","- arrakis"] log
+  assertEqual "value should be" (Right ["myrkr","tatooine","arrakis"]) value
   return ()
 
 testAvailables :: Test.HUnit.Test

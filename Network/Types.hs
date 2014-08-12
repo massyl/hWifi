@@ -5,7 +5,7 @@ import Control.Monad.Error
 
 type WifiMonad w a = WriterT w IO a
 type SSID   = String
-type Signal = String
+type Signal = Integer
 type Wifi   = (SSID, Signal)
 type Log    = String
 type Output = String

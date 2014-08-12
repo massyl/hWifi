@@ -18,11 +18,12 @@ module Network.HWifi where
 -----------------------------------------------------------------------------
 
 import Data.Functor((<$>))
-import Data.List (intersect, sort)
+import Data.List (intersect, sort, sortBy)
 import Control.Monad.Writer hiding(mapM_)
 import Control.Arrow ((***), second)
 import Network.Utils(clean, run, formatMsg, catchIO)
-import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output, CommandError(..), ThrowsError)
+import Network.Types(SSID, Log, Signal, Wifi, WifiMonad, Command(..), Output, CommandError(..), ThrowsError)
+import Data.Function (on)
 
 -- | Helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
@@ -36,16 +37,16 @@ runWithLog comp logFn = do
   tell $ logFn result
   return result
 
--- | Runs a given command, returns available wifis and reports any logged info.
+-- -- | Runs a given command, returns available wifis and reports any logged info.
 available :: Command -> WifiMonad [Log](ThrowsError [SSID])
 available (Scan cmd)  = runWithLog wifis logMsg
                         where parseOutput :: ThrowsError [SSID] -> ThrowsError [SSID]
                               parseOutput input = case input of
                                 Left err    -> Left err
-                                Right ssids -> Right $ map (fst . second sort . parse) ssids
-                                           where -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
+                                Right ssids -> Right $ (map fst . reverse . sortBy (compare `on` snd) . map parse) ssids
+                                           where -- | Slice a string "'wifi':signal" in a tuple ("wifi", signal)
                                                  parse :: Output -> Wifi
-                                                 parse = (clean '\'' *** tail) . break (== ':')
+                                                 parse = (\ (x, y) -> (x, read y :: Signal)) . (clean '\'' *** tail) . break (== ':')
                               wifis :: IO (ThrowsError [SSID])
                               wifis = parseOutput <$> run cmd `catchIO` Left ScanWifiError
                               logMsg :: ThrowsError [SSID] -> [Log]
