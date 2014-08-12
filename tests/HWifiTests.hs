@@ -81,6 +81,19 @@ testAvailables = TestList [ "Retrieve the available wifi list." ~: do
                                return ()
                           ]
 
+testAlreadyKnowns :: Test.HUnit.Test
+testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
+                                  (value, log) <- runWifiMonad $ alreadyUsed (Scan "echo tatooine\nmyrkr\narrakis")
+                                  assertEqual "Log should be" ["\nAuto-connect wifi: \n","- tatooine","- myrkr","- arrakis"] log
+                                  assertEqual "value should be" (Right ["tatooine", "myrkr","arrakis"]) value
+                                  return ()
+                             , "A bad command is executed and caught then sent back" ~: do
+                                  (value, log) <- runWifiMonad $ alreadyUsed (Scan "bad-command")
+                                  assertEqual "Log should be"   ["'bad-command' is not a valid command."] log
+                                  assertEqual "value should be" (Left $ BadCommand "bad-command") value
+                                  return ()
+                                  ]
+
 -- Full tests
 tests :: Test.HUnit.Test
 tests = TestList [ testCommandScanWifi
@@ -92,6 +105,7 @@ tests = TestList [ testCommandScanWifi
                  , testFormatMsgs
                  , testSplits
                  , testAvailables
+                 , testAlreadyKnowns
                  ]
 
 main :: IO ()
