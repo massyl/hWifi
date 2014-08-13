@@ -9,7 +9,6 @@ import Network.Utils ( run
                      , formatMsg
                      , split)
 
-
 testCommandScanWifi, testKnownCommand :: Test.HUnit.Test
 testCommandScanWifi = "Nmcli - Scan command"            ~: "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
 testKnownCommand    = "Nmcli - List known wifi command" ~: "nmcli --terse --fields name con list"        ~=? scan knownCmd
