@@ -32,8 +32,8 @@ testConnectToWifiCommands =
 
 testElectWifis :: Test.HUnit.Test
 testElectWifis =
-  TestList ["Elect wifi - scanned wifi `intersect` known wifi == 'some-wifi-alone'" ~:
-            Right "some-wifi-alone" ~=? unsafeElect (Right ["some-wifi-alone", "wifi2", "wifi3"]) (Right ["some-wifi-alone","known1", "known2"])
+  TestList ["Elect wifi - scanned wifi `intersect` known wifi == 'some-wifi'" ~:
+            Right "some-wifi" ~=? unsafeElect (Right ["some-wifi", "wifi2", "wifi3"]) (Right ["wifi2", "some-wifi","known1", "known2"])
            ,"Elect wifi - no wifi available - no scanned wifi" ~:
             Left NoWifiAvailable ~=? unsafeElect (Right []) (Right ["some-wifi-alone","known1", "known2"])
            ,"Elect wifi - No wifi available - scanned wifi `intersect` known wifi == []" ~:
