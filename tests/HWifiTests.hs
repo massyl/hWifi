@@ -8,6 +8,7 @@ import Network.Utils ( run
                      , clean
                      , formatMsg
                      , split)
+import Network.StandardPolicy
 
 testCommandScanWifi, testKnownCommand :: Test.HUnit.Test
 testCommandScanWifi = "Nmcli - Scan command"            ~: "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
@@ -111,6 +112,14 @@ testConnectWifis = TestList [ "Error is transmitted" ~: do
                                  return ()
                             ]
 
+testScans :: Test.HUnit.Test
+testScans = TestList ["Dummy test which simply ensure everything is rightly plugged" ~: do
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
+                                                                         (Scan "echo tatooine\nmyrkr\narrakis")
+                                                                         (Connect ("echo " ++))
+                         return ()
+                     ]
+
 -- Full tests
 tests :: Test.HUnit.Test
 tests = TestList [ testCommandScanWifi
@@ -124,6 +133,7 @@ tests = TestList [ testCommandScanWifi
                  , testAvailables
                  , testAlreadyKnowns
                  , testConnectWifis
+                 , testScans
                  ]
 
 main :: IO ()
