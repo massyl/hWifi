@@ -67,6 +67,7 @@ library
                         Network.Types
                         Network.Nmcli
                         Network.HWifi
+                        Network.StandardPolicy
 
     build-depends: base >=4.5 && <4.7, process, mtl >= 2.1.2, text >= 0.11.1.3
     ghc-options: -w -threaded         
@@ -77,6 +78,7 @@ executable hWifi
                         Network.Utils
                         Network.Types
                         Network.Nmcli  
+                        Network.StandardPolicy
   -- .hs or .lhs file ontaining the Main module.
   -- main-is:
 

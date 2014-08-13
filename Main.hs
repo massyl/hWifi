@@ -30,45 +30,15 @@ import Network.Types( SSID
                     , Log
                     , Command(..)
                     , ThrowsError)
-import Network.HWifi ( runWifiMonad
-                     , unsafeElect
-                     , available
-                     , alreadyUsed
-                     , connectWifi)
-import Control.Exception (evaluate)
-
--- | Elects wifi safely (runs in `IO` monad)
-elect :: ThrowsError [SSID] -> ThrowsError [SSID] -> IO (ThrowsError SSID)
-elect wifis = evaluate . unsafeElect wifis
-
--- | Returns the available network wifi list and records any logged message
-availableWifisWithLogs :: Command -> IO (ThrowsError [SSID], [Log])
-availableWifisWithLogs = runWifiMonad . available
-
--- | Returns already used network wifi list and record any logged message.
-alreadyUsedWifisWithLogs :: Command -> IO (ThrowsError [SSID], [Log])
-alreadyUsedWifisWithLogs = runWifiMonad . alreadyUsed
-
--- | Connect to wifi
-connectWifiWithLogs :: Command -> ThrowsError SSID -> IO (ThrowsError [SSID], [Log])
-connectWifiWithLogs cmd = runWifiMonad . connectWifi cmd
-
--- | Log informational
-output :: [Log]-> IO ()
-output = mapM_ putStrLn
+import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
+                              , alreadyUsedWifisWithLogs
+                              , availableWifisWithLogs
+                              , elect)
 
 -- | Main orchestrator
 -- Determine the highest known wifi signal and connect to it
 main :: IO ()
-main = do
-  (allWifis, msg0)   <- availableWifisWithLogs scanCmd
-  output msg0
-  (knownWifis, msg1) <- alreadyUsedWifisWithLogs knownCmd
-  output msg1
-  (result, msg2)     <- join $ connectWifiWithLogs conCmd <$> elect knownWifis allWifis
-  case result of
-    Left err -> putStrLn $ "\nError: " ++ show err
-    Right _  -> output msg2
+main = scanAndConnectToKnownWifiWithMostPowerfulSignal scanCmd knownCmd conCmd
 
 -- | Returns available network wifis. It discards any logged message.
 availableWifis :: Command -> IO (ThrowsError [SSID])
