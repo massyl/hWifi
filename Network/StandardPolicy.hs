@@ -60,7 +60,7 @@ scanAndConnectToKnownWifiWithMostPowerfulSignal scanCommand knownCommand conComm
   output msg0
   (knownWifis, msg1) <- alreadyUsedWifisWithLogs knownCommand
   output msg1
-  (result, msg2)     <- join $ connectWifiWithLogs conCommand <$> elect knownWifis allWifis
+  (result, msg2)     <- join $ connectWifiWithLogs conCommand <$> elect allWifis knownWifis
   case result of
     Left err -> putStrLn $ "\nError: " ++ show err
     Right _  -> output msg2
