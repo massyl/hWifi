@@ -41,12 +41,9 @@ runWithLog comp logFn = do
 available :: Command -> WifiMonad [Log](ThrowsError [SSID])
 available (Scan cmd)  = runWithLog wifis logMsg
                         where parseOutput :: ThrowsError [SSID] -> ThrowsError [SSID]
-                              parseOutput input = case input of
-                                e@(Left _)  -> e
-                                Right ssids -> Right $ (map fst . sortBy (flip compare `on` snd) . map parse) ssids
-                                           where -- | Slice a string "'wifi':signal" in a tuple ("wifi", signal)
-                                                 parse :: Output -> Wifi
-                                                 parse = second (\y -> read y :: Integer) . (clean '\'' *** tail) . break (== ':')
+                              parseOutput = fmap (map fst . sortBy (flip compare `on` snd) . map parse)
+                                                  where parse :: Output -> Wifi
+                                                        parse = second (\y -> read y :: Integer) . (clean '\'' *** tail) . break (== ':')
                               wifis :: IO (ThrowsError [SSID])
                               wifis = parseOutput <$> run cmd `catchIO` Left ScanWifiError
                               logMsg :: ThrowsError [SSID] -> [Log]
