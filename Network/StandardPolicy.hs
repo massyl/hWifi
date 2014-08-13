@@ -49,7 +49,7 @@ alreadyUsedWifisWithLogs = runWifiMonad . alreadyUsed
 connectWifiWithLogs :: Command -> ThrowsError SSID -> IO (ThrowsError [SSID], [Log])
 connectWifiWithLogs cmd = runWifiMonad . connectWifi cmd
 
--- | Log informational
+-- | Log output
 output :: [Log]-> IO ()
 output = mapM_ putStrLn
 
