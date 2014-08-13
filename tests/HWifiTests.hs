@@ -42,7 +42,7 @@ testElectWifis =
             Left NoWifiAvailable ~=? unsafeElect (Left NoWifiAvailable) (Right ["some-wifi-alone"])
            ,"Elect wifi - Error - Error in known wifi list so error is transmitted  " ~:
             Left KnownWifiError ~=? unsafeElect (Right ["wifi0"]) (Left KnownWifiError)
-  ]
+           ]
 
 testRuns :: Test.HUnit.Test
 testRuns = TestList [ "run - Bad command - Empty command" ~:
@@ -72,12 +72,12 @@ testAvailables :: Test.HUnit.Test
 testAvailables = TestList [ "Retrieve the available wifi list." ~: do
                                (value, log) <- runWifiMonad $ available (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
                                assertEqual "Log should be"   ["Scanned wifi: \n","- myrkr","- tatooine","- arrakis"] log
-                               assertEqual "value should be" (Right ["myrkr","tatooine","arrakis"]) value
+                               assertEqual "Value should be" (Right ["myrkr","tatooine","arrakis"]) value
                                return ()
                           , "A bad command is executed and caught then sent back" ~: do
                                (value, log) <- runWifiMonad $ available (Scan "bad-command")
                                assertEqual "Log should be"   ["'bad-command' is not a valid command."] log
-                               assertEqual "value should be" (Left $ BadCommand "bad-command") value
+                               assertEqual "Value should be" (Left $ BadCommand "bad-command") value
                                return ()
                           ]
 
