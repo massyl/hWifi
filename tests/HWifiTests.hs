@@ -112,26 +112,33 @@ testConnectWifis = TestList [ "Error is transmitted" ~: do
                                  return ()
                             ]
 
+fakeScanCommand, fakeAvailableCommand :: String -> Command
+fakeScanCommand = Scan . ("echo " ++)
+fakeAvailableCommand = Scan . ("echo " ++)
+
+fakeConnectCommand :: Command
+fakeConnectCommand = Connect ("echo " ++)
+
 testScans :: Test.HUnit.Test
 testScans = TestList [ "Ok - wifi elected - Only 'tatooine' is known so elected" ~: do
-                         scanAndConnectToKnownWifiWithMostPowerfulSignal (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
-                                                                         (Scan "echo tatooine")
-                                                                         (Connect ("echo " ++))
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "'tatooine':98\n'myrkr':100\n'arrakis':50")
+                                                                         (fakeAvailableCommand "tatooine")
+                                                                         fakeConnectCommand
                          return ()
                      , "Ok - wifi elected - Most powerful signal wifi 'myrkr' is elected" ~: do
-                         scanAndConnectToKnownWifiWithMostPowerfulSignal (Scan "echo 'tatooine':90\n'myrkr':99\n'arrakis':50")
-                                                                         (Scan "echo tatooine\nmyrkr")
-                                                                         (Connect ("echo " ++))
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "'tatooine':90\n'myrkr':99\n'arrakis':50")
+                                                                         (fakeAvailableCommand "tatooine\nmyrkr")
+                                                                         fakeConnectCommand
                          return ()
                      , "Ok - No wifi elected - No scanned wifi" ~: do
-                         scanAndConnectToKnownWifiWithMostPowerfulSignal (Scan "echo ")
-                                                                         (Scan "echo tatooine")
-                                                                         (Connect ("echo " ++))
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "")
+                                                                         (fakeAvailableCommand "tatooine")
+                                                                         fakeConnectCommand
                          return ()
                      , "Ok - No wifi elected - No known wifi" ~: do
-                         scanAndConnectToKnownWifiWithMostPowerfulSignal (Scan "echo 'tatooine':90")
-                                                                         (Scan "echo myrkr")
-                                                                         (Connect ("echo " ++))
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "'tatooine':90")
+                                                                         (fakeAvailableCommand "myrkr")
+                                                                         fakeConnectCommand
                          return ()
                      ]
 
