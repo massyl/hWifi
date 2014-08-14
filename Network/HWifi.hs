@@ -18,11 +18,11 @@ module Network.HWifi where
 -----------------------------------------------------------------------------
 
 import Data.Functor((<$>))
-import Data.List (intersect, sort, sortBy)
+import Data.List (intersect, sortBy)
 import Control.Monad.Writer hiding(mapM_)
 import Control.Arrow ((***), second)
 import Network.Utils(clean, run, formatMsg, catchIO)
-import Network.Types(SSID, Log, Signal, Wifi, WifiMonad, Command(..), Output, CommandError(..), ThrowsError)
+import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output, CommandError(..), ThrowsError)
 import Data.Function (on)
 
 -- | Helper function, to run stack of monad transformers
