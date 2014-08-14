@@ -1,14 +1,16 @@
 module Main where
 
 import Test.HUnit
-import Network.HWifi
-import Network.Nmcli
-import Network.Types
+import Network.Types ( Command(..)
+                     , CommandError(..))
+import Network.HWifi ( unsafeElect)
+import Network.Nmcli ( scanCmd
+                     , conCmd
+                     , knownCmd)
 import Network.Utils ( run
                      , clean
                      , formatMsg
                      , split)
-import Network.StandardPolicy
 import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
                               , availableWifisWithLogs
                               , alreadyUsedWifisWithLogs
