@@ -1,5 +1,20 @@
 module Network.Types where
 
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Network.Types
+-- Copyright   :  (c) Commiters
+-- License     :  The same as `nmcli` - http://manpages.ubuntu.com/manpages/maverick/man1/nmcli.1.html
+--
+-- Maintainer  :  massyl, ardumont
+-- Stability   :  experimental
+-- Portability :  unportable
+-- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
+--
+-- Definition types.
+--
+-----------------------------------------------------------------------------
+
 import Control.Monad.Writer (WriterT)
 import Control.Monad.Error
 

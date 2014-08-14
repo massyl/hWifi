@@ -8,13 +8,11 @@ module Network.HWifi where
 --
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
--- Portability :  portable
+-- Portability :  unportable
 -- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
 --
--- A simple module to deal with wifi connections.
--- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
+-- Module exposing primitive functions to orchestrate wifi connections.
 --
--- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
 import Data.Functor((<$>))

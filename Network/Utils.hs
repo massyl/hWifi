@@ -8,7 +8,7 @@ module Network.Utils where
 --
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
--- Portability :  portable
+-- Portability :  unportable
 -- Dependency  :
 --
 -- Utility functions module

@@ -12,13 +12,12 @@ module Network.StandardPolicy ( elect
 --
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
--- Portability :  portable
+-- Portability :  unportable
 -- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
 --
--- A module to deal with wifi connections.
--- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
+-- A standard policy connection module.
+-- Determine the most powerful wifi signal amongst known auto-connect wifi and try and connect to it.
 --
--- Use: cabal run
 -----------------------------------------------------------------------------
 import Control.Monad(join)
 import Data.Functor((<$>))
