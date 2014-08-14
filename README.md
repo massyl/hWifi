@@ -15,7 +15,13 @@ This will:
 Embedding this in a script:
 
 ```sh
-runhaskell Network/Wifi.hs
+runhaskell Main.hs
+```
+
+or
+
+```sh
+cabal run
 ```
 
 Possible output:
@@ -45,7 +51,9 @@ You already have some connection settings applied to your machine.
 
 # platform
 
-Tested only on debian-based machine
+Tested on:
+- debian-based (ubuntu, linux mint)
+- nixos
 
 # Tested use case
 
@@ -58,6 +66,6 @@ Tested only on debian-based machine
 ## concurrency
 
 - Let your current wifi connected
-- Activate the tethering on your mobile phone and let your mobile phone near your computer.
+- Activate the tethering on your mobile phone and let your mobile phone near your computer (this should be the most powerful signal)
 - Run the command
-- This will connect you over the tethering connection which must be more powerful than your other wifi connections
+- This will connect you to the tethering connection over your other wifi connections
