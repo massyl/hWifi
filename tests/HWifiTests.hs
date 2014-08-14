@@ -121,8 +121,8 @@ testConnectWifiWithLogs = TestList [ "Error is transmitted" ~: do
                             ]
 testAvailables :: Test.HUnit.Test
 testAvailables = TestList [ "Retrieve the available wifi list." ~: do
-                               value <- availableWifis (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
-                               assertEqual "Value should be" (Right ["myrkr","tatooine","arrakis"]) value
+                               value <- availableWifis (Scan "echo 'tatooine':57\n'myrkr':40\n'arrakis':90")
+                               assertEqual "Value should be" (Right ["arrakis","tatooine","myrkr"]) value
                                return ()
                           , "A bad command is executed and caught then sent back" ~: do
                                value <- availableWifis (Scan "bad-command")
@@ -132,8 +132,8 @@ testAvailables = TestList [ "Retrieve the available wifi list." ~: do
 
 testAlreadyKnowns :: Test.HUnit.Test
 testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
-                                  value <- alreadyUsedWifis (Scan "echo tatooine\nmyrkr\narrakis")
-                                  assertEqual "value should be" (Right ["tatooine", "myrkr","arrakis"]) value
+                                  value <- alreadyUsedWifis (Scan "echo myrkr\ntatooine\narrakis")
+                                  assertEqual "value should be" (Right ["myrkr", "tatooine","arrakis"]) value
                                   return ()
                              , "A bad command is executed and caught then sent back" ~: do
                                   value <- alreadyUsedWifis (Scan "bad-command")
