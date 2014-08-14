@@ -20,20 +20,20 @@ module Network.Utils ( split
 --
 -----------------------------------------------------------------------------
 
-import qualified Data.Text as T
-import System.Process (readProcess)
-import Data.List ( delete
-                 , isPrefixOf)
-import Data.Functor((<$>))
 import Control.Exception ( catch
                          , SomeException(..))
 import Control.Monad.Trans ( MonadIO
                            , liftIO)
+import Data.Functor ((<$>))
+import Data.List ( delete
+                 , isPrefixOf)
+import qualified Data.Text as T
+import Network.Types (ThrowsError
+                     , CommandError(..))
 import System.IO( stderr
                 , hFlush
                 , hPrint)
-import Network.Types (ThrowsError
-                     , CommandError(..))
+import           System.Process (readProcess)
 
 -- | Split string s on `sep` string
 split :: String -> String -> [String]

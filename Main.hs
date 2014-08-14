@@ -22,19 +22,19 @@ module Main (main
 --
 -----------------------------------------------------------------------------
 
-import Control.Monad(join)
-import Data.Functor((<$>))
-import Control.Applicative((<*>))
+import Control.Applicative ((<*>))
+import Control.Monad (join)
+import Data.Functor ((<$>))
 import Network.Nmcli( conCmd
                     , scanCmd
                     , knownCmd)
-import Network.Types( SSID
-                    , Command(..)
-                    , ThrowsError)
 import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
                               , alreadyUsedWifisWithLogs
                               , availableWifisWithLogs
                               , elect)
+import Network.Types( SSID
+                    , Command(..)
+                    , ThrowsError)
 
 -- | Main orchestrator
 -- Determine the highest known wifi signal and connect to it

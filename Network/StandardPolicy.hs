@@ -20,18 +20,19 @@ module Network.StandardPolicy ( elect
 -- Determine the most powerful wifi signal amongst known auto-connect wifi and try and connect to it.
 --
 -----------------------------------------------------------------------------
-import Control.Monad(join)
-import Data.Functor((<$>))
-import Network.Types( SSID
-                    , Log
-                    , Command(..)
-                    , ThrowsError)
+
+import Control.Exception (evaluate)
+import Control.Monad (join)
+import Data.Functor ((<$>))
 import Network.HWifi ( runWifiMonad
                      , unsafeElect
                      , available
                      , alreadyUsed
                      , connectWifi)
-import Control.Exception (evaluate)
+import Network.Types( SSID
+                    , Log
+                    , Command(..)
+                    , ThrowsError)
 
 -- | Elects wifi safely (runs in `IO` monad)
 elect :: ThrowsError [SSID] -> ThrowsError [SSID] -> IO (ThrowsError SSID)
