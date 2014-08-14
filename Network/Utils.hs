@@ -22,12 +22,18 @@ module Network.Utils ( split
 
 import qualified Data.Text as T
 import System.Process (readProcess)
-import Data.List (delete, isPrefixOf)
+import Data.List ( delete
+                 , isPrefixOf)
 import Data.Functor((<$>))
-import Control.Exception (catch, SomeException(..))
-import Control.Monad.Trans (MonadIO, liftIO)
-import System.IO(stderr, hFlush, hPrint)
-import Network.Types (ThrowsError, CommandError(..))
+import Control.Exception ( catch
+                         , SomeException(..))
+import Control.Monad.Trans ( MonadIO
+                           , liftIO)
+import System.IO( stderr
+                , hFlush
+                , hPrint)
+import Network.Types (ThrowsError
+                     , CommandError(..))
 
 -- | Split string s on `sep` string
 split :: String -> String -> [String]

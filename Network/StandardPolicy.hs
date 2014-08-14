@@ -2,7 +2,8 @@ module Network.StandardPolicy ( elect
                               , availableWifisWithLogs
                               , alreadyUsedWifisWithLogs
                               , connectWifiWithLogs
-                              , scanAndConnectToKnownWifiWithMostPowerfulSignal) where
+                              , scanAndConnectToKnownWifiWithMostPowerfulSignal)
+       where
 
 -----------------------------------------------------------------------------
 -- |
