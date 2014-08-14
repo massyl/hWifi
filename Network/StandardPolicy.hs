@@ -2,7 +2,12 @@ module Network.StandardPolicy ( elect
                               , availableWifisWithLogs
                               , alreadyUsedWifisWithLogs
                               , connectWifiWithLogs
-                              , scanAndConnectToKnownWifiWithMostPowerfulSignal)
+                              , scanAndConnectToKnownWifiWithMostPowerfulSignal
+                              , availableWifis
+                              , alreadyUsedWifis
+                              , connectToWifi
+                              , connectWifi
+                              , electedWifi)
        where
 
 -----------------------------------------------------------------------------
@@ -21,6 +26,7 @@ module Network.StandardPolicy ( elect
 --
 -----------------------------------------------------------------------------
 
+import Control.Applicative ((<*>))
 import Control.Exception (evaluate)
 import Control.Monad (join)
 import Data.Functor ((<$>))
@@ -28,7 +34,7 @@ import Network.HWifi ( runWifiMonad
                      , unsafeElect
                      , available
                      , alreadyUsed
-                     , connectWifi)
+                     , connectToWifi)
 import Network.Types( SSID
                     , Log
                     , Command(..)
@@ -48,7 +54,7 @@ alreadyUsedWifisWithLogs = runWifiMonad . alreadyUsed
 
 -- | Connect to wifi
 connectWifiWithLogs :: Command -> ThrowsError SSID -> IO (ThrowsError [SSID], [Log])
-connectWifiWithLogs cmd = runWifiMonad . connectWifi cmd
+connectWifiWithLogs cmd = runWifiMonad . connectToWifi cmd
 
 -- | Log output
 output :: [Log]-> IO ()
@@ -65,3 +71,19 @@ scanAndConnectToKnownWifiWithMostPowerfulSignal scanCommand knownCommand conComm
   case result of
     Left err -> putStrLn $ "\nError: " ++ show err
     Right _  -> output msg2
+
+-- | Returns available network wifis. It discards any logged message.
+availableWifis :: Command -> IO (ThrowsError [SSID])
+availableWifis scanCommand = fst <$> availableWifisWithLogs scanCommand
+
+-- | Returns already used network wifis. It discards any logged message.
+alreadyUsedWifis :: Command -> IO (ThrowsError [SSID])
+alreadyUsedWifis knownCommand = fst <$> alreadyUsedWifisWithLogs knownCommand
+
+-- | Connection to a wifi
+connectWifi :: Command -> ThrowsError SSID -> IO (ThrowsError [SSID])
+connectWifi cmd ssid = fst <$> connectWifiWithLogs cmd ssid
+
+-- | Returns elected wifi (wifi already known, available, with highest signal).
+electedWifi :: Command -> Command -> IO (ThrowsError SSID)
+electedWifi scanCommand knownCommand = join $ elect <$> alreadyUsedWifis knownCommand <*> availableWifis scanCommand

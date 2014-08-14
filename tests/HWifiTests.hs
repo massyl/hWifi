@@ -14,7 +14,10 @@ import Network.Utils ( run
 import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
                               , availableWifisWithLogs
                               , alreadyUsedWifisWithLogs
-                              , connectWifiWithLogs)
+                              , connectWifiWithLogs
+                              , availableWifis
+                              , alreadyUsedWifis
+                              , connectWifi)
 
 testCommandScanWifi, testKnownCommand :: Test.HUnit.Test
 testCommandScanWifi = "Nmcli - Scan command"            ~: "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
@@ -73,8 +76,8 @@ testSplits =
            , "testSplit2" ~: split "x"    "x"                ~=? ["",""]
            ]
 
-testAvailables :: Test.HUnit.Test
-testAvailables = TestList [ "Retrieve the available wifi list." ~: do
+testAvailableWifiWithLogs :: Test.HUnit.Test
+testAvailableWifiWithLogs = TestList [ "Retrieve the available wifi list." ~: do
                                (value, log) <- availableWifisWithLogs (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
                                assertEqual "Log should be"   ["Scanned wifi: \n","- myrkr","- tatooine","- arrakis"] log
                                assertEqual "Value should be" (Right ["myrkr","tatooine","arrakis"]) value
@@ -86,8 +89,8 @@ testAvailables = TestList [ "Retrieve the available wifi list." ~: do
                                return ()
                           ]
 
-testAlreadyKnowns :: Test.HUnit.Test
-testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
+testAlreadyKnownWifiWithLogs :: Test.HUnit.Test
+testAlreadyKnownWifiWithLogs = TestList [ "Retrieve the already known wifi." ~: do
                                   (value, log) <- alreadyUsedWifisWithLogs (Scan "echo tatooine\nmyrkr\narrakis")
                                   assertEqual "Log should be" ["\nAuto-connect wifi: \n","- tatooine","- myrkr","- arrakis"] log
                                   assertEqual "value should be" (Right ["tatooine", "myrkr","arrakis"]) value
@@ -99,8 +102,8 @@ testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
                                   return ()
                                   ]
 
-testConnectWifis :: Test.HUnit.Test
-testConnectWifis = TestList [ "Error is transmitted" ~: do
+testConnectWifiWithLogs :: Test.HUnit.Test
+testConnectWifiWithLogs = TestList [ "Error is transmitted" ~: do
                                  (value, log) <- connectWifiWithLogs (Scan "not-used-command") (Left $ BadCommand "echo")
                                  assertEqual "Log should be" [] log
                                  assertEqual "value should be" (Left $ BadCommand "echo") value
@@ -113,6 +116,42 @@ testConnectWifis = TestList [ "Error is transmitted" ~: do
                             , "Bad command is provided. This should break." ~: do
                                  (value, log) <- connectWifiWithLogs (Connect ("bad-command " ++)) (Right "wifi-ssid")
                                  assertEqual "Log should be" ["'bad-command wifi-ssid' is not a valid command."] log
+                                 assertEqual "value should be" (Left $ BadCommand "bad-command wifi-ssid") value
+                                 return ()
+                            ]
+testAvailables :: Test.HUnit.Test
+testAvailables = TestList [ "Retrieve the available wifi list." ~: do
+                               value <- availableWifis (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
+                               assertEqual "Value should be" (Right ["myrkr","tatooine","arrakis"]) value
+                               return ()
+                          , "A bad command is executed and caught then sent back" ~: do
+                               value <- availableWifis (Scan "bad-command")
+                               assertEqual "Value should be" (Left $ BadCommand "bad-command") value
+                               return ()
+                          ]
+
+testAlreadyKnowns :: Test.HUnit.Test
+testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
+                                  value <- alreadyUsedWifis (Scan "echo tatooine\nmyrkr\narrakis")
+                                  assertEqual "value should be" (Right ["tatooine", "myrkr","arrakis"]) value
+                                  return ()
+                             , "A bad command is executed and caught then sent back" ~: do
+                                  value <- alreadyUsedWifis (Scan "bad-command")
+                                  assertEqual "value should be" (Left $ BadCommand "bad-command") value
+                                  return ()
+                                  ]
+
+testConnectWifis :: Test.HUnit.Test
+testConnectWifis = TestList [ "Error is transmitted" ~: do
+                                 value <- connectWifi (Scan "not-used-command") (Left $ BadCommand "echo")
+                                 assertEqual "value should be" (Left $ BadCommand "echo") value
+                                 return ()
+                            , "A wifi is provided and the connection should be ok" ~: do
+                                 value <- connectWifi (Connect ("echo connection " ++)) (Right "wifi-ssid")
+                                 assertEqual "value should be" (Right ["connection wifi-ssid"]) value
+                                 return ()
+                            , "Bad command is provided. This should break." ~: do
+                                 value <- connectWifi (Connect ("bad-command " ++)) (Right "wifi-ssid")
                                  assertEqual "value should be" (Left $ BadCommand "bad-command wifi-ssid") value
                                  return ()
                             ]
@@ -160,6 +199,10 @@ tests = TestList [ testCommandScanWifi
                  , testAvailables
                  , testAlreadyKnowns
                  , testConnectWifis
+                 , testScans
+                 , testAvailableWifiWithLogs
+                 , testAlreadyKnownWifiWithLogs
+                 , testConnectWifiWithLogs
                  , testScans
                  ]
 

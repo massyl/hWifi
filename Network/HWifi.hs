@@ -2,7 +2,7 @@ module Network.HWifi ( runWifiMonad
                      , runWithLog
                      , available
                      , alreadyUsed
-                     , connectWifi
+                     , connectToWifi
                      , unsafeElect)
        where
 
@@ -73,9 +73,9 @@ alreadyUsed (Scan cmd)  = runWithLog wifis logMsg
                                 logMsg = formatMsg "\nAuto-connect wifi: \n" ("- "++)
 
 -- | Connect to wifi
-connectWifi :: Command -> ThrowsError SSID -> WifiMonad [Log](ThrowsError [SSID])
-connectWifi _ (Left err)                     = return $ Left err
-connectWifi (Connect connectFn) (Right ssid) =
+connectToWifi :: Command -> ThrowsError SSID -> WifiMonad [Log](ThrowsError [SSID])
+connectToWifi _ (Left err)                     = return $ Left err
+connectToWifi (Connect connectFn) (Right ssid) =
   runWithLog wifis logMsg
   where parseOutput = id
         wifis = parseOutput <$> run (connectFn ssid) `catchIO` (Left $ ConnectionError ssid)

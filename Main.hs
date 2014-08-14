@@ -22,16 +22,13 @@ module Main (main
 --
 -----------------------------------------------------------------------------
 
-import Control.Applicative ((<*>))
-import Control.Monad (join)
-import Data.Functor ((<$>))
 import Network.Nmcli( conCmd
                     , scanCmd
                     , knownCmd)
-import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
-                              , alreadyUsedWifisWithLogs
-                              , availableWifisWithLogs
-                              , elect)
+import Network.StandardPolicy ( availableWifis
+                              , alreadyUsedWifis
+                              , electedWifi
+                              , scanAndConnectToKnownWifiWithMostPowerfulSignal)
 import Network.Types( SSID
                     , Command(..)
                     , ThrowsError)
@@ -40,15 +37,3 @@ import Network.Types( SSID
 -- Determine the highest known wifi signal and connect to it
 main :: IO ()
 main = scanAndConnectToKnownWifiWithMostPowerfulSignal scanCmd knownCmd conCmd
-
--- | Returns available network wifis. It discards any logged message.
-availableWifis :: Command -> IO (ThrowsError [SSID])
-availableWifis scanCommand = fst <$> availableWifisWithLogs scanCommand
-
--- | Returns already used network wifis. It discards any logged message.
-alreadyUsedWifis :: Command -> IO (ThrowsError [SSID])
-alreadyUsedWifis knownCommand = fst <$> alreadyUsedWifisWithLogs knownCommand
-
--- | Returns elected wifi (wifi already known, available, with highest signal).
-electedWifi :: Command -> Command -> IO (ThrowsError SSID)
-electedWifi scanCommand knownCommand = join $ elect <$> alreadyUsedWifis knownCommand <*> availableWifis scanCommand
