@@ -1,4 +1,10 @@
-module Network.HWifi where
+module Network.HWifi ( runWifiMonad
+                     , runWithLog
+                     , available
+                     , alreadyUsed
+                     , connectWifi
+                     , unsafeElect)
+       where
 
 -----------------------------------------------------------------------------
 -- |

@@ -1,4 +1,7 @@
-module Network.Nmcli(scanCmd, knownCmd, conCmd) where
+module Network.Nmcli ( scanCmd
+                     , knownCmd
+                     , conCmd)
+       where
 
 -----------------------------------------------------------------------------
 -- |

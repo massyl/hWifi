@@ -1,4 +1,9 @@
-module Network.Utils where
+module Network.Utils ( split
+                     , run
+                     , clean
+                     , formatMsg
+                     , catchIO)
+       where
 
 -----------------------------------------------------------------------------
 -- |
