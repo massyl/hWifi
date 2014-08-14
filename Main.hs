@@ -29,7 +29,6 @@ import Network.Nmcli( conCmd
                     , scanCmd
                     , knownCmd)
 import Network.Types( SSID
-                    , Log
                     , Command(..)
                     , ThrowsError)
 import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
