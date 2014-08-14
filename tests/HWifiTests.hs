@@ -35,7 +35,6 @@ testConnectToWifiCommands =
            , "Nmcli - test connect to wifi command - empty"     ~: "sudo nmcli con up id "         ~=? connect conCmd []
            ]
 
-
 testElectWifis :: Test.HUnit.Test
 testElectWifis =
   TestList ["Elect wifi - scanned wifi `intersect` known wifi == 'some-wifi'" ~:
