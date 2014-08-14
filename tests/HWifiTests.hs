@@ -9,6 +9,10 @@ import Network.Utils ( run
                      , formatMsg
                      , split)
 import Network.StandardPolicy
+import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
+                              , availableWifisWithLogs
+                              , alreadyUsedWifisWithLogs
+                              , connectWifiWithLogs)
 
 testCommandScanWifi, testKnownCommand :: Test.HUnit.Test
 testCommandScanWifi = "Nmcli - Scan command"            ~: "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
@@ -70,12 +74,12 @@ testSplits =
 
 testAvailables :: Test.HUnit.Test
 testAvailables = TestList [ "Retrieve the available wifi list." ~: do
-                               (value, log) <- runWifiMonad $ available (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
+                               (value, log) <- availableWifisWithLogs (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
                                assertEqual "Log should be"   ["Scanned wifi: \n","- myrkr","- tatooine","- arrakis"] log
                                assertEqual "Value should be" (Right ["myrkr","tatooine","arrakis"]) value
                                return ()
                           , "A bad command is executed and caught then sent back" ~: do
-                               (value, log) <- runWifiMonad $ available (Scan "bad-command")
+                               (value, log) <- availableWifisWithLogs (Scan "bad-command")
                                assertEqual "Log should be"   ["'bad-command' is not a valid command."] log
                                assertEqual "Value should be" (Left $ BadCommand "bad-command") value
                                return ()
@@ -83,12 +87,12 @@ testAvailables = TestList [ "Retrieve the available wifi list." ~: do
 
 testAlreadyKnowns :: Test.HUnit.Test
 testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
-                                  (value, log) <- runWifiMonad $ alreadyUsed (Scan "echo tatooine\nmyrkr\narrakis")
+                                  (value, log) <- alreadyUsedWifisWithLogs (Scan "echo tatooine\nmyrkr\narrakis")
                                   assertEqual "Log should be" ["\nAuto-connect wifi: \n","- tatooine","- myrkr","- arrakis"] log
                                   assertEqual "value should be" (Right ["tatooine", "myrkr","arrakis"]) value
                                   return ()
                              , "A bad command is executed and caught then sent back" ~: do
-                                  (value, log) <- runWifiMonad $ alreadyUsed (Scan "bad-command")
+                                  (value, log) <- alreadyUsedWifisWithLogs (Scan "bad-command")
                                   assertEqual "Log should be"   ["'bad-command' is not a valid command."] log
                                   assertEqual "value should be" (Left $ BadCommand "bad-command") value
                                   return ()
@@ -96,17 +100,17 @@ testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
 
 testConnectWifis :: Test.HUnit.Test
 testConnectWifis = TestList [ "Error is transmitted" ~: do
-                                 (value, log) <- runWifiMonad $ connectWifi (Scan "not-used-command") (Left $ BadCommand "echo")
+                                 (value, log) <- connectWifiWithLogs (Scan "not-used-command") (Left $ BadCommand "echo")
                                  assertEqual "Log should be" [] log
                                  assertEqual "value should be" (Left $ BadCommand "echo") value
                                  return ()
                             , "A wifi is provided and the connection should be ok" ~: do
-                                 (value, log) <- runWifiMonad $ connectWifi (Connect ("echo connection " ++)) (Right "wifi-ssid")
+                                 (value, log) <- connectWifiWithLogs (Connect ("echo connection " ++)) (Right "wifi-ssid")
                                  assertEqual "Log should be" ["\nConnection to wifi 'wifi-ssid'","connection wifi-ssid"] log
                                  assertEqual "value should be" (Right ["connection wifi-ssid"]) value
                                  return ()
                             , "Bad command is provided. This should break." ~: do
-                                 (value, log) <- runWifiMonad $ connectWifi (Connect ("bad-command " ++)) (Right "wifi-ssid")
+                                 (value, log) <- connectWifiWithLogs (Connect ("bad-command " ++)) (Right "wifi-ssid")
                                  assertEqual "Log should be" ["'bad-command wifi-ssid' is not a valid command."] log
                                  assertEqual "value should be" (Left $ BadCommand "bad-command wifi-ssid") value
                                  return ()
