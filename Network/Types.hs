@@ -15,8 +15,8 @@ module Network.Types where
 --
 -----------------------------------------------------------------------------
 
-import Control.Monad.Writer (WriterT)
-import Control.Monad.Error
+import           Control.Monad.Error
+import           Control.Monad.Writer (WriterT)
 
 type WifiMonad w a = WriterT w IO a
 type SSID   = String

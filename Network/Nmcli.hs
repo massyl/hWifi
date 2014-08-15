@@ -18,7 +18,7 @@ module Network.Nmcli ( scanCmd
 --
 -----------------------------------------------------------------------------
 
-import Network.Types(Command(..))
+import           Network.Types (Command (..))
 
 -- |  Command to scan the current wifi
 scanCmd :: Command

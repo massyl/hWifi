@@ -22,13 +22,9 @@ module Main (main
 --
 -----------------------------------------------------------------------------
 
-import Network.Nmcli( conCmd
-                    , scanCmd
-                    , knownCmd)
-import Network.StandardPolicy ( availableWifis
-                              , alreadyUsedWifis
-                              , electedWifi
-                              , scanAndConnectToKnownWifiWithMostPowerfulSignal)
+import           Network.Nmcli          (conCmd, knownCmd, scanCmd)
+import           Network.StandardPolicy (alreadyUsedWifis, availableWifis,
+                                         electedWifi, scanAndConnectToKnownWifiWithMostPowerfulSignal)
 
 -- | Main orchestrator
 -- Determine the highest known wifi signal and connect to it

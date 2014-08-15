@@ -26,19 +26,13 @@ module Network.StandardPolicy ( elect
 --
 -----------------------------------------------------------------------------
 
-import Control.Applicative ((<*>))
-import Control.Exception (evaluate)
-import Control.Monad (join)
-import Data.Functor ((<$>))
-import Network.HWifi ( runWifiMonad
-                     , unsafeElect
-                     , available
-                     , alreadyUsed
-                     , connectToWifi)
-import Network.Types( SSID
-                    , Log
-                    , Command(..)
-                    , ThrowsError)
+import           Control.Applicative ((<*>))
+import           Control.Exception   (evaluate)
+import           Control.Monad       (join)
+import           Data.Functor        ((<$>))
+import           Network.HWifi       (alreadyUsed, available, connectToWifi,
+                                      runWifiMonad, unsafeElect)
+import           Network.Types       (Command (..), Log, SSID, ThrowsError)
 
 -- | Elects wifi safely (runs in `IO` monad)
 elect :: ThrowsError [SSID] -> ThrowsError [SSID] -> IO (ThrowsError SSID)

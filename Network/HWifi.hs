@@ -21,25 +21,15 @@ module Network.HWifi ( runWifiMonad
 --
 -----------------------------------------------------------------------------
 
-import Control.Arrow ( (***)
-                     , second)
-import Control.Monad.Writer hiding(mapM_)
-import Data.Function (on)
-import Data.Functor ((<$>))
-import Data.List ( intersect
-                 , sortBy)
-import Network.Types( SSID
-                    , Log
-                    , Wifi
-                    , WifiMonad
-                    , Output
-                    , Command(..)
-                    , CommandError(..)
-                    , ThrowsError)
-import Network.Utils( clean
-                    , run
-                    , formatMsg
-                    , catchIO)
+import           Control.Arrow        (second, (***))
+import           Control.Monad.Writer hiding (mapM_)
+import           Data.Function        (on)
+import           Data.Functor         ((<$>))
+import           Data.List            (intersect, sortBy)
+import           Network.Types        (Command (..), CommandError (..), Log,
+                                       Output, SSID, ThrowsError, Wifi,
+                                       WifiMonad)
+import           Network.Utils        (catchIO, clean, formatMsg, run)
 
 -- | Helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
