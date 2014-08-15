@@ -29,9 +29,6 @@ import Network.StandardPolicy ( availableWifis
                               , alreadyUsedWifis
                               , electedWifi
                               , scanAndConnectToKnownWifiWithMostPowerfulSignal)
-import Network.Types( SSID
-                    , Command(..)
-                    , ThrowsError)
 
 -- | Main orchestrator
 -- Determine the highest known wifi signal and connect to it
