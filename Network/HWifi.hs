@@ -54,6 +54,7 @@ available (Scan cmd)  = runWithLog wifis logMsg
                               wifis = parseOutput <$> run cmd `catchIO` Left ScanWifiError
                               logMsg :: ThrowsError [SSID] -> [Log]
                               logMsg = formatMsg "Scanned wifi: \n" ("- "++)
+available c = (return . Left . BadCommand . show) c
 
 -- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log](ThrowsError [SSID])
@@ -61,6 +62,7 @@ alreadyUsed (Scan cmd)  = runWithLog wifis logMsg
                           where parseOutput = id
                                 wifis = parseOutput <$> run cmd `catchIO` Left KnownWifiError
                                 logMsg = formatMsg "\nAuto-connect wifi: \n" ("- "++)
+alreadyUsed c = (return . Left . BadCommand . show) c
 
 -- | Connect to wifi
 connectToWifi :: Command -> ThrowsError SSID -> WifiMonad [Log](ThrowsError [SSID])
@@ -70,6 +72,7 @@ connectToWifi (Connect connectFn) (Right ssid) =
   where parseOutput = id
         wifis = parseOutput <$> run (connectFn ssid) `catchIO` (Left $ ConnectionError ssid)
         logMsg = formatMsg ("\nConnection to wifi '" ++ ssid ++ "'") id
+connectToWifi c _ = (return . Left . BadCommand . show) c
 
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter
