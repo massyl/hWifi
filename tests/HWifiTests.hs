@@ -1,23 +1,14 @@
 module Main where
 
-import Test.HUnit
-import Network.Types ( Command(..)
-                     , CommandError(..))
-import Network.HWifi ( unsafeElect)
-import Network.Nmcli ( scanCmd
-                     , conCmd
-                     , knownCmd)
-import Network.Utils ( run
-                     , clean
-                     , formatMsg
-                     , split)
-import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
-                              , availableWifisWithLogs
-                              , alreadyUsedWifisWithLogs
-                              , connectWifiWithLogs
-                              , availableWifis
-                              , alreadyUsedWifis
-                              , connectWifi)
+import           Network.HWifi          (unsafeElect)
+import           Network.Nmcli          (conCmd, createCmd, knownCmd, scanCmd)
+import           Network.StandardPolicy (alreadyUsedWifis,
+                                         alreadyUsedWifisWithLogs,
+                                         availableWifis, availableWifisWithLogs,
+                                         connectWifi, connectWifiWithLogs, scanAndConnectToKnownWifiWithMostPowerfulSignal)
+import           Network.Types          (Command (..), CommandError (..))
+import           Network.Utils          (clean, formatMsg, run, split)
+import           Test.HUnit
 
 testCommandScanWifi, testKnownCommand :: Test.HUnit.Test
 testCommandScanWifi = "Nmcli - Scan command"            ~: "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
@@ -37,6 +28,10 @@ testConnectToWifiCommands =
   TestList [ "Nmcli - test connect to wifi command - with wifi" ~: "sudo nmcli con up id tatooine" ~=? connect conCmd "tatooine"
            , "Nmcli - test connect to wifi command - empty"     ~: "sudo nmcli con up id "         ~=? connect conCmd []
            ]
+
+testCreateWifiCommands :: Test.HUnit.Test
+testCreateWifiCommands =
+  TestList [ "Checkbox" ~: "sudo /usr/share/checkbox/scripts/create_connection wifi -S wpa -K some-pass myrkr" ~=? create createCmd "myrkr" "wpa" "some-pass"]
 
 testElectWifis :: Test.HUnit.Test
 testElectWifis =
@@ -192,6 +187,7 @@ tests = TestList [ testCommandScanWifi
                  , testKnownCommand
                  , testCleanStrings
                  , testConnectToWifiCommands
+                 , testCreateWifiCommands
                  , testElectWifis
                  , testRuns
                  , testFormatMsgs
