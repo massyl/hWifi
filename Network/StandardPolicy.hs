@@ -7,7 +7,8 @@ module Network.StandardPolicy ( elect
                               , alreadyUsedWifis
                               , connectToWifi
                               , connectWifi
-                              , electedWifi)
+                              , electedWifi
+                              , createNewWifiConnectionAndConnect)
        where
 
 -----------------------------------------------------------------------------
@@ -31,8 +32,9 @@ import           Control.Exception   (evaluate)
 import           Control.Monad       (join)
 import           Data.Functor        ((<$>))
 import           Network.HWifi       (alreadyUsed, available, connectToWifi,
-                                      runWifiMonad, unsafeElect)
-import           Network.Types       (Command (..), Log, SSID, ThrowsError)
+                                      createNewWifi, runWifiMonad, unsafeElect)
+import           Network.Types       (Command (..), Log, Psk, SSID, ThrowsError,
+                                      WifiSecurity)
 
 -- | Elects wifi safely (runs in `IO` monad)
 elect :: ThrowsError [SSID] -> ThrowsError [SSID] -> IO (ThrowsError SSID)
@@ -50,6 +52,10 @@ alreadyUsedWifisWithLogs = runWifiMonad . alreadyUsed
 connectWifiWithLogs :: Command -> ThrowsError SSID -> IO (ThrowsError [SSID], [Log])
 connectWifiWithLogs cmd = runWifiMonad . connectToWifi cmd
 
+-- | Create a wifi connection and connect to it
+createWifiWithLogs :: Command -> SSID -> WifiSecurity -> Psk -> IO (ThrowsError [SSID], [Log])
+createWifiWithLogs cmd ssid wifiSecurity psk = runWifiMonad $ createNewWifi cmd ssid wifiSecurity psk
+
 -- | Log output
 output :: [Log]-> IO ()
 output = mapM_ putStrLn
@@ -65,6 +71,12 @@ scanAndConnectToKnownWifiWithMostPowerfulSignal scanCommand knownCommand conComm
   case result of
     Left err -> putStrLn $ "\nError: " ++ show err
     Right _  -> output msg2
+
+-- | Create a new wifi and connection and connect to it
+createNewWifiConnectionAndConnect :: Command -> SSID -> WifiSecurity -> Psk -> IO ()
+createNewWifiConnectionAndConnect cmd ssid wifiSecurity psk = do
+  (_, msg0) <- createWifiWithLogs cmd ssid wifiSecurity psk
+  output msg0
 
 -- | Returns available network wifis. It discards any logged message.
 availableWifis :: Command -> IO (ThrowsError [SSID])
