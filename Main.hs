@@ -13,11 +13,12 @@ module Main (main
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
 -- Portability :  unportable
--- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
+-- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/) + checkbox (System testing application)
 --
 -- A module to deal with wifi connections.
--- Determine the most powerful wifi signal amongst known auto-connect wifi and try and connect to it.
--- If providing (ssid, wifiSecurity {wpa or wep}, psk), this will create a new auto-connect entry and connect to it.
+-- 2 use cases:
+-- - Determine the most powerful wifi signal amongst known auto-connect wifis and connect to it.
+-- - If provided with (ssid, wifiSecurity {wpa or wep}, psk) in this order, this will create a new auto-connect entry and connect to it.
 --
 -- Use:
 -- - `cabal run` for standard auto-connect policy to known wifi
