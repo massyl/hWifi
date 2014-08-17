@@ -1,3 +1,5 @@
+WIFI_SSID=AndroidAP-tony
+
 pr:
 	hub pull-request -b lambdatree:master
 
@@ -33,3 +35,6 @@ build:
 
 run-nix-shell:
 	nix-shell --pure hwifi.nix
+
+clean-wifi:
+	nmcli con delete id $(WIFI_SSID)
