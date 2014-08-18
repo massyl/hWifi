@@ -8,7 +8,8 @@ module Network.StandardPolicy ( elect
                               , connectToWifi
                               , connectWifi
                               , electedWifi
-                              , createNewWifiConnectionAndConnect)
+                              , createNewWifiConnectionAndConnect
+                              , createWifiWithLogs)
        where
 
 -----------------------------------------------------------------------------
