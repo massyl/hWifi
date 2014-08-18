@@ -1,11 +1,13 @@
 module Main where
 
-import           Network.HWifi          (unsafeElect)
+import           Network.HWifi          (createNewWifi, unsafeElect)
 import           Network.Nmcli          (conCmd, createCmd, knownCmd, scanCmd)
 import           Network.StandardPolicy (alreadyUsedWifis,
                                          alreadyUsedWifisWithLogs,
                                          availableWifis, availableWifisWithLogs,
-                                         connectWifi, connectWifiWithLogs, scanAndConnectToKnownWifiWithMostPowerfulSignal)
+                                         connectWifi, connectWifiWithLogs,
+                                         createNewWifiConnectionAndConnect,
+                                         createWifiWithLogs, scanAndConnectToKnownWifiWithMostPowerfulSignal)
 import           Network.Types          (Command (..), CommandError (..))
 import           Network.Utils          (clean, formatMsg, run, split)
 import           Test.HUnit
@@ -114,6 +116,26 @@ testConnectWifiWithLogs = TestList [ "Error is transmitted" ~: do
                                  assertEqual "value should be" (Left $ BadCommand "bad-command wifi-ssid") value
                                  return ()
                             ]
+
+testCreateWifiWithLogs :: Test.HUnit.Test
+testCreateWifiWithLogs =
+  TestList [ "A wifi is empty, so this should stop." ~: do
+             (value, log) <- createWifiWithLogs createCmd "" "wifi-security" "psk"
+             assertEqual "Log should be" [] log
+             assertEqual "value should be" (Left $ EmptySSID "SSID must be specified!") value
+             return ()
+           , "A wifi is empty, so this should stop." ~: do
+             (value, log) <- createWifiWithLogs fakeCreateCommand "ssid" "wpa" "psk"
+             assertEqual "Log should be" ["\nCreation of the wifi connection 'ssid' and connection","ssid"] log
+             assertEqual "value should be" (Right ["ssid"]) value
+             return ()
+           , "Bad command is provided. This should break." ~: do
+             (value, log) <- createWifiWithLogs (fakeScanCommand "ssid") "ssid" "wpa" "psk"
+             assertEqual "Log should be" [] log
+             assertEqual "value should be" (Left $ BadCommand "Scan wifi") value
+             return ()
+           ]
+
 testAvailables :: Test.HUnit.Test
 testAvailables = TestList [ "Retrieve the available wifi list." ~: do
                                value <- availableWifis (Scan "echo 'tatooine':57\n'myrkr':40\n'arrakis':90")
@@ -158,6 +180,9 @@ fakeAvailableCommand = Scan . ("echo " ++)
 fakeConnectCommand :: Command
 fakeConnectCommand = Connect ("echo " ++)
 
+fakeCreateCommand :: Command
+fakeCreateCommand = Create (\ si _ _ -> "echo " ++ si)
+
 testScans :: Test.HUnit.Test
 testScans = TestList [ "Ok - wifi elected - Only 'tatooine' is known so elected" ~: do
                          scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "'tatooine':98\n'myrkr':100\n'arrakis':50")
@@ -200,6 +225,7 @@ tests = TestList [ testCommandScanWifi
                  , testAlreadyKnownWifiWithLogs
                  , testConnectWifiWithLogs
                  , testScans
+                 , testCreateWifiWithLogs
                  ]
 
 main :: IO ()
