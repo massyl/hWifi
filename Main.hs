@@ -85,7 +85,7 @@ eval (Options { optAuto = True
 eval (Options { optSSID = (Just ssid)
               , optConnectPolicy = (Just connectPolicy)
               , optPsk = (Just psk) })   = createNewWifiConnectionAndConnect createCmd ssid connectPolicy psk
-eval _                                   = usage ["Unknown options - Either use automatic connection (-a) or provide ssid (-s) with connect-policy (-c) and psk (-p)."]
+eval _                                   = usage ["Incomplete options - Either use automatic connection (-a) or provide ssid (-s) with connect-policy (-c) and psk (-p)."]
 
 main :: IO ()
 main = getArgs >>= compilerOpts >>= eval
