@@ -27,8 +27,8 @@ module Main (main
 --  -p <psk>      --psk=<psk>                 Pre-Shared Key to connect to the ssid.
 --
 -- For example:
--- - `cabal run` for standard auto-connect policy to known wifi
--- - `cabal run <ssid> <wifiSecurity> <psk>` to create a new auto-connect wifi entry
+-- - `hWifi` or `hWifi -a` for standard auto-connect policy to known wifi
+-- - `hWifi -s <ssid> -c <connect-policy> -p <psk>` to create a new auto-connect wifi entry for the <ssid> using <connect-policy> and password <psk>
 --
 -----------------------------------------------------------------------------
 
