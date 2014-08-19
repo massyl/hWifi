@@ -77,7 +77,7 @@ version :: String
 version = "0.0.0.1"
 
 eval :: Options -> IO ()
-eval (Options { optShowVersion = True }) = putStrLn $ "hWifi" ++ version
+eval (Options { optShowVersion = True }) = putStrLn $ "hWifi " ++ version
 eval (Options { optAuto = True
               , optSSID = Nothing
               , optConnectPolicy = Nothing
