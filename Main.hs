@@ -39,6 +39,7 @@ import           Network.StandardPolicy (alreadyUsedWifis, availableWifis,
 import           System.Console.GetOpt
 import           System.Environment
 
+-- | Possible options for HWifi
 data Options = Options { optShowVersion   :: Bool
                        , optAuto          :: Bool
                        , optSSID          :: Maybe String
@@ -46,14 +47,16 @@ data Options = Options { optShowVersion   :: Bool
                        , optPsk           :: Maybe String
                        } deriving Show
 
+-- | Default options (auto-connect policy)
 defaultOptions :: Options
-defaultOptions    = Options { optShowVersion   = False
-                            , optAuto          = True
-                            , optSSID          = Nothing
-                            , optConnectPolicy = Nothing
-                            , optPsk           = Nothing
-                            }
+defaultOptions = Options { optShowVersion   = False
+                         , optAuto          = True
+                         , optSSID          = Nothing
+                         , optConnectPolicy = Nothing
+                         , optPsk           = Nothing
+                         }
 
+-- | Different possible CLI options
 options :: [OptDescr (Options -> Options)]
 options =
   [ Option "V?"["version"]        (NoArg (\ opts -> opts { optShowVersion = True }))                    "Show version number"
@@ -63,19 +66,23 @@ options =
   , Option "p" ["psk"]            (ReqArg (\ f opts -> opts { optPsk = Just f }) "<psk>")               "Pre-Shared Key to connect to the ssid."
   ]
 
+-- | Display the typical usage of hwifi
 usage :: [String] -> IO a
 usage errs = ioError (userError (concat errs ++ usageInfo header options))
              where header = "\nUsage: hwifi [OPTION...] files..."
 
+-- | Compile the options from the args
 compilerOpts :: [String] -> IO Options
-compilerOpts argv =
-  case getOpt Permute options argv of
+compilerOpts args =
+  case getOpt Permute options args of
      (opts,_,[]) -> return $ foldl (flip id) defaultOptions opts
      (_,_,errs)  -> usage errs
 
+-- | Hwifi version (Improve this)
 version :: String
 version = "0.0.0.1"
 
+-- | Evaluate the options options parsed from CLI
 eval :: Options -> IO ()
 eval (Options { optShowVersion = True }) = putStrLn $ "hWifi " ++ version
 eval (Options { optAuto = True
@@ -85,7 +92,8 @@ eval (Options { optAuto = True
 eval (Options { optSSID = (Just ssid)
               , optConnectPolicy = (Just connectPolicy)
               , optPsk = (Just psk) })   = createNewWifiConnectionAndConnect createCmd ssid connectPolicy psk
-eval _                                   = usage ["Incomplete options - Either use automatic connection (-a) or provide ssid (-s) with connect-policy (-c) and psk (-p)."]
+eval _ = usage ["Incomplete options - Either use automatic connection (-a) or provide ssid (-s) with connect-policy (-c) and psk (-p)."]
 
+-- | HWifi
 main :: IO ()
 main = getArgs >>= compilerOpts >>= eval
