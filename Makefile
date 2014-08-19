@@ -37,4 +37,4 @@ run-nix-shell:
 	nix-shell --pure hwifi.nix
 
 clean-wifi:
-	nmcli con delete id $(WIFI_SSID)
+	sudo nmcli con delete id $(WIFI_SSID)
