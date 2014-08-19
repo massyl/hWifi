@@ -33,30 +33,39 @@ import           Network.StandardPolicy (alreadyUsedWifis, availableWifis,
 import           System.Console.GetOpt
 import           System.Environment
 
-data Flag = Verbose
-          | Version
-          | Auto
-          | PSK String
-          | SSID String
-          | ConnectPolicy String
-          | LibDir String
-          deriving Show
+data Options = Options { optVerbose       :: Bool
+                       , optShowVersion   :: Bool
+                       , optAuto          :: Bool
+                       , optSSID          :: Maybe String
+                       , optConnectPolicy :: Maybe String
+                       , optPsk           :: Maybe String
+                       } deriving Show
 
-options :: [OptDescr Flag]
-options = [ Option "v"  ["verbose"]        (NoArg Verbose)                         "Chatty output on stderr"
-          , Option "V?" ["version"]        (NoArg Version)                         "Show version number"
-          , Option "a"  ["auto"]           (NoArg Auto)                            "Auto-connect policy"
-          , Option "s"  ["ssid"]           (ReqArg SSID "SSID")                    "SSID to connect to"
-          , Option "c"  ["connect-policy"] (ReqArg ConnectPolicy "connect-policy") "wifi connect policy: wpa or wep"
-          , Option "p"  ["psk"]            (ReqArg PSK "pre-shared-key")           "Pre-shared key to connect to the wifi"
-          ]
+defaultOptions :: Options
+defaultOptions    = Options { optVerbose       = False
+                            , optShowVersion   = False
+                            , optAuto          = True
+                            , optSSID          = Nothing
+                            , optConnectPolicy = Nothing
+                            , optPsk           = Nothing
+                            }
 
-compilerOpts :: [String] -> IO ([Flag], [String])
+options :: [OptDescr (Options -> Options)]
+options =
+ [ Option "v" ["verbose"]        (NoArg (\ opts -> opts { optVerbose = True }))                             "Chatty output on stderr"
+ , Option "V?"["version"]        (NoArg (\ opts -> opts { optShowVersion = True }))                         "Show version number"
+ , Option "a" ["auto"]           (NoArg (\ opts -> opts { optAuto = True }))                                "Standard auto-connect policy. This is the default behavior"
+ , Option "s" ["ssid"]           (ReqArg (\ f opts -> opts { optSSID = Just f }) "SSID")                    "wifi SSID to connect to."
+ , Option "c" ["connect-policy"] (ReqArg (\ f opts -> opts { optConnectPolicy = Just f }) "connect-policy") "The connection policy (wep or wpa)"
+ , Option "p" ["psk"]            (ReqArg (\ f opts -> opts { optPsk = Just f }) "pre-shared key")           "Pre-Shared Key to connect to the ssid."
+ ]
+
+compilerOpts :: [String] -> IO (Options, [String])
 compilerOpts argv =
    case getOpt Permute options argv of
-      (opts, nonOpts,[]) -> return (opts, nonOpts)
-      (_,_,errs)         -> ioError (userError (concat errs ++ usageInfo header options))
-  where header = "Usage: ic [OPTION...] files..."
+      (opts,nonOpts,[]) -> return (foldl (flip id) defaultOptions opts, nonOpts)
+      (_,_,errs)        -> ioError (userError (concat errs ++ usageInfo header options))
+  where header = "Usage: hwifi [OPTION...] files..."
 
 -- | Main orchestrator
 -- Without argument: Determine the highest known wifi signal and connect to it
@@ -72,4 +81,4 @@ compilerOpts argv =
 
 main :: IO ()
 main =
-  getArgs >>=  compilerOpts >>= \flags -> mapM_ print $ fst flags
+  getArgs >>=  compilerOpts >>= \opts -> print $ fst opts
