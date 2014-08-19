@@ -68,7 +68,7 @@ options =
 
 -- | Display the typical usage of hwifi
 usage :: [String] -> IO a
-usage errs = ioError (userError (concat errs ++ usageInfo header options))
+usage errs = ioError . userError $ concat errs ++ usageInfo header options
              where header = "\nUsage: hwifi [OPTION...] files..."
 
 -- | Compile the options from the args
