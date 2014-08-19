@@ -18,7 +18,7 @@ module Main (main
 -- A module to deal with wifi connections, 2 main use cases:
 -- - Automatic: Determine the most powerful wifi signal amongst known auto-connect wifis and connect to it.
 -- - Manual: If provided with (ssid, connection policy {wpa or wep}, and pre-shared key), this will create a new auto-connect entry and connect to it.
-
+--
 -- Usage: hwifi [OPTION...] files...
 --  -V, -?        --version                   Show version number
 --  -a            --auto                      Standard auto-connect policy. This is the default behavior
