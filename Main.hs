@@ -52,33 +52,32 @@ defaultOptions    = Options { optVerbose       = False
 
 options :: [OptDescr (Options -> Options)]
 options =
- [ Option "v" ["verbose"]        (NoArg (\ opts -> opts { optVerbose = True }))                             "Chatty output on stderr"
- , Option "V?"["version"]        (NoArg (\ opts -> opts { optShowVersion = True }))                         "Show version number"
- , Option "a" ["auto"]           (NoArg (\ opts -> opts { optAuto = True }))                                "Standard auto-connect policy. This is the default behavior"
- , Option "s" ["ssid"]           (ReqArg (\ f opts -> opts { optSSID = Just f }) "SSID")                    "wifi SSID to connect to."
- , Option "c" ["connect-policy"] (ReqArg (\ f opts -> opts { optConnectPolicy = Just f }) "connect-policy") "The connection policy (wep or wpa)"
- , Option "p" ["psk"]            (ReqArg (\ f opts -> opts { optPsk = Just f }) "pre-shared key")           "Pre-Shared Key to connect to the ssid."
- ]
+  [ Option "v" ["verbose"]        (NoArg (\ opts -> opts { optVerbose = True }))                        "Chatty output on stderr"
+  , Option "V?"["version"]        (NoArg (\ opts -> opts { optShowVersion = True }))                    "Show version number"
+  , Option "a" ["auto"]           (NoArg (\ opts -> opts { optAuto = True }))                           "Standard auto-connect policy. This is the default behavior"
+  , Option "s" ["ssid"]           (ReqArg (\ f opts -> opts { optSSID = Just f }) "SSID")               "wifi SSID to connect to."
+  , Option "c" ["connect-policy"] (ReqArg (\ f opts -> opts { optConnectPolicy = Just f }) "<wpa|wep>") "The connection policy (wep or wpa)"
+  , Option "p" ["psk"]            (ReqArg (\ f opts -> opts { optPsk = Just f }) "<psk>")               "Pre-Shared Key to connect to the ssid."
+  ]
 
-compilerOpts :: [String] -> IO (Options, [String])
+compilerOpts :: [String] -> IO Options
 compilerOpts argv =
-   case getOpt Permute options argv of
-      (opts,nonOpts,[]) -> return (foldl (flip id) defaultOptions opts, nonOpts)
-      (_,_,errs)        -> ioError (userError (concat errs ++ usageInfo header options))
+  case getOpt Permute options argv of
+     (opts,_,[]) -> return $ foldl (flip id) defaultOptions opts
+     (_,_,errs)  -> ioError (userError (concat errs ++ usageInfo header options))
   where header = "Usage: hwifi [OPTION...] files..."
-
--- | Main orchestrator
--- Without argument: Determine the highest known wifi signal and connect to it
--- With 3 arguments (ssid, wifiSecurity, psk) in this order, create a new wifi session and connect to it
--- main :: IO ()
--- main = do
---   args <- getArgs
---   let (argv, _) = compilerOpts args in
---   case any (== Auto) argv of
---     True -> scanAndConnectToKnownWifiWithMostPowerfulSignal scanCmd knownCmd conCmd
---     _     -> let (ssid:wifiSecurity:psk:_) = args in
---              createNewWifiConnectionAndConnect createCmd ssid wifiSecurity psk
 
 main :: IO ()
 main =
-  getArgs >>=  compilerOpts >>= \opts -> print $ fst opts
+  getArgs >>=
+  compilerOpts >>=
+  \ (Options { optVerbose = verboseFlag
+             , optShowVersion = versionFlag
+             , optAuto = autoFlag
+             , optSSID = ssidOpt
+             , optConnectPolicy = connectPolicyOpt
+             , optPsk = pskOpt }) ->
+               if autoFlag
+                  then scanAndConnectToKnownWifiWithMostPowerfulSignal scanCmd knownCmd conCmd
+                  else let (Just ssid, Just connectPolicy, Just psk) = (ssidOpt, connectPolicyOpt, pskOpt)
+                       in createNewWifiConnectionAndConnect createCmd ssid connectPolicy psk
