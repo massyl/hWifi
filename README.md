@@ -3,7 +3,7 @@ hWifi [![Build Status](https://travis-ci.org/lambdatree/hWifi.png?branch=master)
 
 A simple wifi haskell executable to connect to available Wifi.
 
-The main attraction about hWifi is the auto-connect policy to the most powerful amongst known ssid signal.
+The main attraction about hWifi is the auto-connect policy to the most powerful signal amongst known wifi.
 
 # Use
 
