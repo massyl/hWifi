@@ -88,9 +88,6 @@ defaultValueOrRead :: String -> Maybe String -> IO String
 defaultValueOrRead _      (Just defaultValue) = return defaultValue
 defaultValueOrRead prompt Nothing             = putStrLn prompt >> getLine
 
--- | Prompt the user to input the value if not already  provided
-semiAutomaticPrompt :: [(String, Maybe String)] -> IO [String]
-semiAutomaticPrompt = mapM (uncurry defaultValueOrRead)
 
 -- | Evaluate the options options parsed from CLI
 eval :: Options -> IO ()
@@ -106,6 +103,7 @@ eval (Options { optSSID = ssidDefaultValue
                                   , ("Connection policy (wep or wpa)?", connectPolicyDefaultValue)
                                   , ("Pre-shared key", pskDefaultValue)] >>=
               \ (ssid:connectPolicy:psk:_) -> createNewWifiConnectionAndConnect createCmd ssid connectPolicy psk
+              where semiAutomaticPrompt = mapM (uncurry defaultValueOrRead)
 
 -- | HWifi
 main :: IO ()
