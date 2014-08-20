@@ -38,6 +38,7 @@ import           Network.StandardPolicy (alreadyUsedWifis, availableWifis,
                                          electedWifi, scanAndConnectToKnownWifiWithMostPowerfulSignal)
 import           System.Console.GetOpt
 import           System.Environment
+import           System.IO              (getLine)
 
 -- | Possible options for HWifi
 data Options = Options { optShowVersion   :: Bool
@@ -82,6 +83,15 @@ compilerOpts args =
 version :: String
 version = "0.0.0.1"
 
+-- | Prompt the user to input data if defaultValue is not provided
+defaultValueOrRead :: String -> Maybe String -> IO String
+defaultValueOrRead _      (Just defaultValue) = return defaultValue
+defaultValueOrRead prompt Nothing             = putStrLn prompt >> getLine
+
+-- | Prompt the user to input the value if not already  provided
+semiAutomaticPrompt :: [(String, Maybe String)] -> IO [String]
+semiAutomaticPrompt = mapM (uncurry defaultValueOrRead)
+
 -- | Evaluate the options options parsed from CLI
 eval :: Options -> IO ()
 eval (Options { optShowVersion = True }) = putStrLn $ "hWifi " ++ version
@@ -89,10 +99,13 @@ eval (Options { optAuto = True
               , optSSID = Nothing
               , optConnectPolicy = Nothing
               , optPsk = Nothing })      = scanAndConnectToKnownWifiWithMostPowerfulSignal scanCmd knownCmd conCmd
-eval (Options { optSSID = (Just ssid)
-              , optConnectPolicy = (Just connectPolicy)
-              , optPsk = (Just psk) })   = createNewWifiConnectionAndConnect createCmd ssid connectPolicy psk
-eval _ = usage ["Incomplete options - Either use automatic connection (-a) or provide ssid (-s) with connect-policy (-c) and psk (-p)."]
+eval (Options { optSSID = ssidDefaultValue
+              , optConnectPolicy = connectPolicyDefaultValue
+              , optPsk = pskDefaultValue })          =
+              semiAutomaticPrompt [ ("SSID to connect to?", ssidDefaultValue)
+                                  , ("Connection policy (wep or wpa)?", connectPolicyDefaultValue)
+                                  , ("Pre-shared key", pskDefaultValue)] >>=
+              \ (ssid:connectPolicy:psk:_) -> createNewWifiConnectionAndConnect createCmd ssid connectPolicy psk
 
 -- | HWifi
 main :: IO ()
