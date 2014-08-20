@@ -38,7 +38,7 @@ import           Network.StandardPolicy (alreadyUsedWifis, availableWifis,
                                          electedWifi, scanAndConnectToKnownWifiWithMostPowerfulSignal)
 import           System.Console.GetOpt
 import           System.Environment
-import           System.IO              (getLine)
+import           System.IO              (getLine, hFlush, stdout)
 
 -- | Possible options for HWifi
 data Options = Options { optShowVersion   :: Bool
@@ -86,8 +86,7 @@ version = "0.0.0.1"
 -- | Prompt the user to input data if defaultValue is not provided
 defaultValueOrRead :: String -> Maybe String -> IO String
 defaultValueOrRead _      (Just defaultValue) = return defaultValue
-defaultValueOrRead prompt Nothing             = putStrLn prompt >> getLine
-
+defaultValueOrRead prompt Nothing             = putStr (prompt ++ " ") >> hFlush stdout >> getLine
 
 -- | Evaluate the options options parsed from CLI
 eval :: Options -> IO ()
@@ -101,7 +100,7 @@ eval (Options { optSSID = ssidDefaultValue
               , optPsk = pskDefaultValue })          =
               semiAutomaticPrompt [ ("SSID to connect to?", ssidDefaultValue)
                                   , ("Connection policy (wep or wpa)?", connectPolicyDefaultValue)
-                                  , ("Pre-shared key", pskDefaultValue)] >>=
+                                  , ("Pre-shared key?", pskDefaultValue)] >>=
               \ (ssid:connectPolicy:psk:_) -> createNewWifiConnectionAndConnect createCmd ssid connectPolicy psk
               where semiAutomaticPrompt = mapM (uncurry defaultValueOrRead)
 
