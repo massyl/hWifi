@@ -38,7 +38,7 @@ import           Network.StandardPolicy (alreadyUsedWifis, availableWifis,
                                          electedWifi, scanAndConnectToKnownWifiWithMostPowerfulSignal)
 import           System.Console.GetOpt
 import           System.Environment
-import           System.IO              (getLine, hFlush, stdout)
+import           System.IO              (hFlush, stdout)
 
 -- | Possible options for HWifi
 data Options = Options { optShowVersion   :: Bool
