@@ -38,3 +38,6 @@ run-nix-shell:
 
 clean-wifi:
 	sudo nmcli con delete id $(WIFI_SSID)
+
+manual-release: build
+	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/
