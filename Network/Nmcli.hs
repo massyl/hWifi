@@ -31,7 +31,7 @@ knownCmd = Scan "nmcli --terse --fields name con list"
 
 -- | Given a wifi, execute the command to connect to a wifi (need super power :)
 conCmd :: Command
-conCmd = Connect ("nmcli con up id " ++)
+conCmd = Connect ("sudo nmcli con up id " ++)
 
 -- | Given a wifi, execute the creation of a new wifi entry
 createCmd :: Command
