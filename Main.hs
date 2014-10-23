@@ -63,7 +63,6 @@ options =
   [ Option "V?"["version"]        (NoArg (\ opts -> opts { optShowVersion = True }))                    "Show version number"
   , Option "a" ["auto"]           (NoArg (\ opts -> opts { optAuto = True }))                           "Standard auto-connect policy. This is the default behavior"
   , Option "s" ["ssid"]           (ReqArg (\ f opts -> opts { optSSID = Just f }) "SSID")               "wifi SSID to connect to."
-  , Option "c" ["connect-policy"] (ReqArg (\ f opts -> opts { optConnectPolicy = Just f }) "<wpa|wep>") "The connection policy (wep or wpa)"
   , Option "p" ["psk"]            (ReqArg (\ f opts -> opts { optPsk = Just f }) "<psk>")               "Pre-Shared Key to connect to the ssid."
   ]
 
@@ -93,15 +92,12 @@ eval :: Options -> IO ()
 eval (Options { optShowVersion = True }) = putStrLn $ "hWifi " ++ version
 eval (Options { optAuto = True
               , optSSID = Nothing
-              , optConnectPolicy = Nothing
               , optPsk = Nothing })      = scanAndConnectToKnownWifiWithMostPowerfulSignal scanCmd knownCmd conCmd
 eval (Options { optSSID = ssidDefaultValue
-              , optConnectPolicy = connectPolicyDefaultValue
               , optPsk = pskDefaultValue })          =
               semiAutomaticPrompt [ ("SSID to connect to?", ssidDefaultValue)
-                                  , ("Connection policy (wep or wpa)?", connectPolicyDefaultValue)
                                   , ("Pre-shared key?", pskDefaultValue)] >>=
-              \ (ssid:connectPolicy:psk:_) -> createNewWifiConnectionAndConnect createCmd ssid connectPolicy psk
+              \ (ssid:psk:_) -> createNewWifiConnectionAndConnect createCmd ssid psk
               where semiAutomaticPrompt = mapM (uncurry defaultValueOrRead)
 
 -- | HWifi

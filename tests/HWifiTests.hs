@@ -33,7 +33,7 @@ testConnectToWifiCommands =
 
 testCreateWifiCommands :: Test.HUnit.Test
 testCreateWifiCommands =
-  TestList [ "Checkbox" ~: "sudo /usr/share/checkbox/scripts/create_connection wifi -S wpa -K some-pass myrkr" ~=? create createCmd "myrkr" "wpa" "some-pass"]
+  TestList [ "Checkbox" ~: "sudo nmcli dev wifi connect myrkr password some-pass" ~=? create createCmd "myrkr" "some-pass"]
 
 testElectWifis :: Test.HUnit.Test
 testElectWifis =
@@ -120,17 +120,17 @@ testConnectWifiWithLogs = TestList [ "Error is transmitted" ~: do
 testCreateWifiWithLogs :: Test.HUnit.Test
 testCreateWifiWithLogs =
   TestList [ "A wifi is empty, so this should stop." ~: do
-             (value, log) <- createWifiWithLogs createCmd "" "wifi-security" "psk"
+             (value, log) <- createWifiWithLogs createCmd "" "psk"
              assertEqual "Log should be" [] log
              assertEqual "value should be" (Left $ EmptySSID "SSID must be specified!") value
              return ()
            , "A wifi is empty, so this should stop." ~: do
-             (value, log) <- createWifiWithLogs fakeCreateCommand "ssid" "wpa" "psk"
+             (value, log) <- createWifiWithLogs fakeCreateCommand "ssid" "psk"
              assertEqual "Log should be" ["\nCreation of the wifi connection 'ssid' and connection","ssid"] log
              assertEqual "value should be" (Right ["ssid"]) value
              return ()
            , "Bad command is provided. This should break." ~: do
-             (value, log) <- createWifiWithLogs (fakeScanCommand "ssid") "ssid" "wpa" "psk"
+             (value, log) <- createWifiWithLogs (fakeScanCommand "ssid") "wpa" "psk"
              assertEqual "Log should be" [] log
              assertEqual "value should be" (Left $ BadCommand "Scan wifi") value
              return ()
@@ -181,7 +181,7 @@ fakeConnectCommand :: Command
 fakeConnectCommand = Connect ("echo " ++)
 
 fakeCreateCommand :: Command
-fakeCreateCommand = Create (\ si _ _ -> "echo " ++ si)
+fakeCreateCommand = Create (\ si _ -> "echo " ++ si)
 
 testScans :: Test.HUnit.Test
 testScans = TestList [ "Ok - wifi elected - Only 'tatooine' is known so elected" ~: do

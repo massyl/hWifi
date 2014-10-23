@@ -25,7 +25,6 @@ type Wifi   = (SSID, Signal)
 type Log    = String
 type Output = String
 type Psk    = String
-type WifiSecurity = String
 
 -- | A CLI command to connect or scan wifi
 type CLICommand = String
@@ -33,7 +32,7 @@ type CLICommand = String
 -- | A command is either to scan wifi or to connect to one.
 data Command = Scan { scan :: CLICommand }
              | Connect { connect :: SSID -> CLICommand }
-             | Create { create :: SSID -> WifiSecurity -> Psk -> CLICommand }
+             | Create { create :: SSID -> Psk -> CLICommand }
 
 instance Show Command where
   show (Scan _)    = "Scan wifi"

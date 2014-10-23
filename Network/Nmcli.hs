@@ -35,4 +35,4 @@ conCmd = Connect ("sudo nmcli con up id " ++)
 
 -- | Given a wifi, execute the creation of a new wifi entry
 createCmd :: Command
-createCmd = Create ( \ ssid wifiSecurity psk -> "sudo /usr/share/checkbox/scripts/create_connection wifi -S " ++ wifiSecurity ++ " -K " ++ psk ++ " " ++ ssid )
+createCmd = Create ( \ ssid psk -> "sudo nmcli dev wifi connect " ++ ssid ++ " password " ++ psk )
