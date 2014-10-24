@@ -1,5 +1,5 @@
 { pkgs ? (import <nixpkgs> {})
-, haskellPackages ? pkgs.haskellPackages_ghc763
+, haskellPackages ? pkgs.haskellPackages_ghc783
 , networkmanager ? pkgs.networkmanager # nmcli used by hWifi
 }:
 
