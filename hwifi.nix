@@ -13,7 +13,7 @@ in cabal.mkDerivation (self: {
   src = ./.;
   isLibrary = true;
   isExecutable = true;
-  buildTools = [ cabalInstall_1_18_0_3 networkmanager ];
+  buildTools = [ haskellPackages.cabalInstall networkmanager ];
   buildDepends = with haskellPackages; [ mtl ];
   testDepends = with haskellPackages; [ HUnit QuickCheck ];
   meta = {
