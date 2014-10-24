@@ -34,8 +34,7 @@ import           Control.Monad       (join)
 import           Data.Functor        ((<$>))
 import           Network.HWifi       (alreadyUsed, available, connectToWifi,
                                       createNewWifi, runWifiMonad, unsafeElect)
-import           Network.Types       (Command (..), Log, Psk, SSID, ThrowsError,
-                                      WifiSecurity)
+import           Network.Types       (Command (..), Log, Psk, SSID, ThrowsError)
 
 -- | Elects wifi safely (runs in `IO` monad)
 elect :: ThrowsError [SSID] -> ThrowsError [SSID] -> IO (ThrowsError SSID)
@@ -54,8 +53,8 @@ connectWifiWithLogs :: Command -> ThrowsError SSID -> IO (ThrowsError [SSID], [L
 connectWifiWithLogs cmd = runWifiMonad . connectToWifi cmd
 
 -- | Create a wifi connection and connect to it
-createWifiWithLogs :: Command -> SSID -> WifiSecurity -> Psk -> IO (ThrowsError [SSID], [Log])
-createWifiWithLogs cmd ssid wifiSecurity psk = runWifiMonad $ createNewWifi cmd ssid wifiSecurity psk
+createWifiWithLogs :: Command -> SSID -> Psk -> IO (ThrowsError [SSID], [Log])
+createWifiWithLogs cmd ssid psk = runWifiMonad $ createNewWifi cmd ssid psk
 
 -- | Log output
 output :: [Log]-> IO ()
@@ -74,9 +73,9 @@ scanAndConnectToKnownWifiWithMostPowerfulSignal scanCommand knownCommand conComm
     Right _  -> output msg2
 
 -- | Create a new wifi and connection and connect to it
-createNewWifiConnectionAndConnect :: Command -> SSID -> WifiSecurity -> Psk -> IO ()
-createNewWifiConnectionAndConnect cmd ssid wifiSecurity psk = do
-  (_, msg0) <- createWifiWithLogs cmd ssid wifiSecurity psk
+createNewWifiConnectionAndConnect :: Command -> SSID -> Psk -> IO ()
+createNewWifiConnectionAndConnect cmd ssid psk = do
+  (_, msg0) <- createWifiWithLogs cmd ssid psk
   output msg0
 
 -- | Returns available network wifis. It discards any logged message.

@@ -29,7 +29,7 @@ import           Data.Functor         ((<$>))
 import           Data.List            (intersect, sortBy)
 import           Network.Types        (Command (..), CommandError (..), Log,
                                        Output, Psk, SSID, ThrowsError, Wifi,
-                                       WifiMonad, WifiSecurity)
+                                       WifiMonad)
 import           Network.Utils        (catchIO, clean, formatMsg, run)
 
 -- | Helper function, to run stack of monad transformers
@@ -76,14 +76,14 @@ connectToWifi (Connect connectFn) (Right ssid) =
 connectToWifi c _ = (return . Left . BadCommand . show) c
 
 -- | Create a new wifi and connect to it
-createNewWifi :: Command -> SSID -> WifiSecurity -> Psk -> WifiMonad [Log](ThrowsError [SSID])
-createNewWifi _ [] _ _ = (return . Left . EmptySSID) "SSID must be specified!"
-createNewWifi (Create createFn) ssid wifiSecurity psk =
+createNewWifi :: Command -> SSID -> Psk -> WifiMonad [Log](ThrowsError [SSID])
+createNewWifi _ [] _ = (return . Left . EmptySSID) "SSID must be specified!"
+createNewWifi (Create createFn) ssid psk =
   runWithLog wifis logMsg
   where parseOutput = id
-        wifis = parseOutput <$> run (createFn ssid wifiSecurity psk) `catchIO` (Left $ ConnectionCreationError ssid)
+        wifis = parseOutput <$> run (createFn ssid psk) `catchIO` (Left $ ConnectionCreationError ssid)
         logMsg = formatMsg ("\nCreation of the wifi connection '" ++ ssid ++ "' and connection") id
-createNewWifi c _ _ _ = (return . Left . BadCommand . show) c
+createNewWifi c _ _ = (return . Left . BadCommand . show) c
 
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter

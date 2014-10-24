@@ -5,6 +5,7 @@ pr:
 
 install:
 	uname -a
+	sudo apt-get update
 	sudo apt-get install -y haskell-platform network-manager checkbox
 	cabal --version
 	cabal update &&	cabal install cabal-install
@@ -37,4 +38,7 @@ run-nix-shell:
 	nix-shell --pure hwifi.nix
 
 clean-wifi:
-	nmcli con delete id $(WIFI_SSID)
+	sudo nmcli con delete id $(WIFI_SSID)
+
+manual-release: build
+	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/

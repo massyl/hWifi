@@ -1,10 +1,10 @@
 { pkgs ? (import <nixpkgs> {})
-, haskellPackages ? pkgs.haskellPackages_ghc763
+, haskellPackages ? pkgs.haskellPackages_ghc783
 , networkmanager ? pkgs.networkmanager # nmcli used by hWifi
 }:
 
 let
-  inherit (haskellPackages) cabal cabalInstall_1_18_0_3 HUnit QuickCheck mtl; # Haskell dependencies here
+  inherit (haskellPackages) cabal cabalInstall HUnit QuickCheck mtl; # Haskell dependencies here
 
 in cabal.mkDerivation (self: {
   pname = "hWifi";
@@ -13,7 +13,7 @@ in cabal.mkDerivation (self: {
   src = ./.;
   isLibrary = true;
   isExecutable = true;
-  buildTools = [ cabalInstall_1_18_0_3 networkmanager ];
+  buildTools = [ haskellPackages.cabalInstall networkmanager ];
   buildDepends = with haskellPackages; [ mtl ];
   testDepends = with haskellPackages; [ HUnit QuickCheck ];
   meta = {
