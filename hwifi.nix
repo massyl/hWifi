@@ -4,7 +4,7 @@
 }:
 
 let
-  inherit (haskellPackages) cabal cabalInstall_1_18_0_3 HUnit QuickCheck mtl; # Haskell dependencies here
+  inherit (haskellPackages) cabal cabalInstall HUnit QuickCheck mtl; # Haskell dependencies here
 
 in cabal.mkDerivation (self: {
   pname = "hWifi";
