@@ -5,6 +5,7 @@ pr:
 
 install:
 	uname -a
+	sudo apt-get update
 	sudo apt-get install -y haskell-platform network-manager checkbox
 	cabal --version
 	cabal update &&	cabal install cabal-install
