@@ -1,4 +1,10 @@
-module Network.HWifi where
+module Network.HWifi ( runWifiMonad
+                     , runWithLog
+                     , available
+                     , alreadyUsed
+                     , connectToWifi
+                     , unsafeElect)
+       where
 
 -----------------------------------------------------------------------------
 -- |
@@ -8,21 +14,22 @@ module Network.HWifi where
 --
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
--- Portability :  portable
+-- Portability :  unportable
 -- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
 --
--- A simple module to deal with wifi connections.
--- At the moment, only election of the wifi with the most powerful signal and autoconnect policy.
+-- Module exposing primitive functions to orchestrate wifi connections.
 --
--- Use: runhaskell Network/HWifi.hs
 -----------------------------------------------------------------------------
 
-import Data.Functor((<$>))
-import Data.List (intersect, sort)
-import Control.Monad.Writer hiding(mapM_)
-import Control.Arrow ((***), second)
-import Network.Utils(clean, run, formatMsg, catchIO)
-import Network.Types(SSID, Log, Wifi, WifiMonad, Command(..), Output, CommandError(..), ThrowsError)
+import           Control.Arrow        (second, (***))
+import           Control.Monad.Writer hiding (mapM_)
+import           Data.Function        (on)
+import           Data.Functor         ((<$>))
+import           Data.List            (intersect, sortBy)
+import           Network.Types        (Command (..), CommandError (..), Log,
+                                       Output, SSID, ThrowsError, Wifi,
+                                       WifiMonad)
+import           Network.Utils        (catchIO, clean, formatMsg, run)
 
 -- | Helper function, to run stack of monad transformers
 runWifiMonad :: WifiMonad w a -> IO (a, w)
@@ -40,28 +47,25 @@ runWithLog comp logFn = do
 available :: Command -> WifiMonad [Log](ThrowsError [SSID])
 available (Scan cmd)  = runWithLog wifis logMsg
                         where parseOutput :: ThrowsError [SSID] -> ThrowsError [SSID]
-                              parseOutput input = case input of
-                                Left err    -> Left err
-                                Right ssids -> Right $ map (fst . second sort . parse) ssids
-                                           where -- | Slice a string "'wifi':signal" in a tuple ("wifi", "signal")
-                                                 parse :: Output -> Wifi
-                                                 parse = (clean '\'' *** tail) . break (== ':')
+                              parseOutput = fmap (map fst . sortBy (flip compare `on` snd) . map parse)
+                                                  where parse :: Output -> Wifi
+                                                        parse = second (\y -> read y :: Integer) . (clean '\'' *** tail) . break (== ':')
                               wifis :: IO (ThrowsError [SSID])
                               wifis = parseOutput <$> run cmd `catchIO` Left ScanWifiError
                               logMsg :: ThrowsError [SSID] -> [Log]
                               logMsg = formatMsg "Scanned wifi: \n" ("- "++)
 
--- -- | Returns already used wifis and reports any logged info.
+-- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log](ThrowsError [SSID])
 alreadyUsed (Scan cmd)  = runWithLog wifis logMsg
                           where parseOutput = id
                                 wifis = parseOutput <$> run cmd `catchIO` Left KnownWifiError
                                 logMsg = formatMsg "\nAuto-connect wifi: \n" ("- "++)
 
--- -- | Connect to wifi
-connectWifi :: Command -> ThrowsError SSID -> WifiMonad [Log](ThrowsError [SSID])
-connectWifi _ (Left err)                     = return $ Left err
-connectWifi (Connect connectFn) (Right ssid) =
+-- | Connect to wifi
+connectToWifi :: Command -> ThrowsError SSID -> WifiMonad [Log](ThrowsError [SSID])
+connectToWifi _ (Left err)                     = return $ Left err
+connectToWifi (Connect connectFn) (Right ssid) =
   runWithLog wifis logMsg
   where parseOutput = id
         wifis = parseOutput <$> run (connectFn ssid) `catchIO` (Left $ ConnectionError ssid)

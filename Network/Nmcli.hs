@@ -1,6 +1,24 @@
-module Network.Nmcli(scanCmd, knownCmd, conCmd) where
+module Network.Nmcli ( scanCmd
+                     , knownCmd
+                     , conCmd)
+       where
 
-import Network.Types(Command(..))
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Network.HWifi
+-- Copyright   :  (c) Commiters
+-- License     :  The same as `nmcli` - http://manpages.ubuntu.com/manpages/maverick/man1/nmcli.1.html
+--
+-- Maintainer  :  massyl, ardumont
+-- Stability   :  experimental
+-- Portability :  unportable
+-- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
+--
+-- Module exposing primitive commands using nmcli.
+--
+-----------------------------------------------------------------------------
+
+import           Network.Types (Command (..))
 
 -- |  Command to scan the current wifi
 scanCmd :: Command

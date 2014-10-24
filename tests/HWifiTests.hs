@@ -1,88 +1,190 @@
 module Main where
 
 import Test.HUnit
-import Network.HWifi
-import Network.Nmcli
-import Network.Types
+import Network.Types ( Command(..)
+                     , CommandError(..))
+import Network.HWifi ( unsafeElect)
+import Network.Nmcli ( scanCmd
+                     , conCmd
+                     , knownCmd)
 import Network.Utils ( run
                      , clean
                      , formatMsg
                      , split)
-
-quote::Char
-quote = '\''
+import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
+                              , availableWifisWithLogs
+                              , alreadyUsedWifisWithLogs
+                              , connectWifiWithLogs
+                              , availableWifis
+                              , alreadyUsedWifis
+                              , connectWifi)
 
 testCommandScanWifi, testKnownCommand :: Test.HUnit.Test
-testCommandScanWifi = "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
-testKnownCommand = "nmcli --terse --fields name con list"           ~=? scan knownCmd
+testCommandScanWifi = "Nmcli - Scan command"            ~: "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
+testKnownCommand    = "Nmcli - List known wifi command" ~: "nmcli --terse --fields name con list"        ~=? scan knownCmd
 
-testCleanString1, testCleanString2, testCleanString3, testCleanString4, testCleanStrings :: Test.HUnit.Test
-testCleanString1 = "hello" ~=? clean quote "'hello'"
-testCleanString2 = "hello" ~=? clean quote "'hello"
-testCleanString3 = "hello" ~=? clean quote "hello"
-testCleanString4 = "hello'" ~=? clean quote "hello'"
-testCleanStrings = TestList ["testCleanString1" ~: testCleanString1
-                             ,"testCleanString2" ~: testCleanString2
-                             ,"testCleanString3" ~: testCleanString3
-                             ,"testCleanString4" ~: testCleanString4]
+testCleanStrings :: Test.HUnit.Test
+testCleanStrings =
+  TestList [ "testCleanString1" ~: "hello" ~=? clean quote "'hello'"
+           , "testCleanString2" ~: "hello" ~=? clean quote "'hello"
+           , "testCleanString3" ~: "hello" ~=? clean quote "hello"
+           , "testCleanString4" ~: "hello'" ~=? clean quote "hello'"
+           ]
+  where quote = '\''
 
-testConnectToWifiCommand1, testConnectToWifiCommand2, testConnectToWifiCommands :: Test.HUnit.Test
-testConnectToWifiCommand1 = "sudo nmcli con up id tatooine" ~=? connect conCmd "tatooine"
-testConnectToWifiCommand2 = "sudo nmcli con up id "         ~=? connect conCmd []
-testConnectToWifiCommands = TestList ["testConnectToWifiCommand1" ~: testConnectToWifiCommand1
-                                     ,"testConnectToWifiCommand2" ~: testConnectToWifiCommand2]
+testConnectToWifiCommands :: Test.HUnit.Test
+testConnectToWifiCommands =
+  TestList [ "Nmcli - test connect to wifi command - with wifi" ~: "sudo nmcli con up id tatooine" ~=? connect conCmd "tatooine"
+           , "Nmcli - test connect to wifi command - empty"     ~: "sudo nmcli con up id "         ~=? connect conCmd []
+           ]
 
+testElectWifis :: Test.HUnit.Test
+testElectWifis =
+  TestList ["Elect wifi - scanned wifi `intersect` known wifi == 'some-wifi'" ~:
+            Right "some-wifi" ~=? unsafeElect (Right ["some-wifi", "wifi2", "wifi3"]) (Right ["wifi2", "some-wifi","known1", "known2"])
+           ,"Elect wifi - no wifi available - no scanned wifi" ~:
+            Left NoWifiAvailable ~=? unsafeElect (Right []) (Right ["some-wifi-alone","known1", "known2"])
+           ,"Elect wifi - No wifi available - scanned wifi `intersect` known wifi == []" ~:
+            Left NoWifiAvailable ~=? unsafeElect (Right ["wifi0"]) (Right ["some-wifi-alone"])
+           ,"Elect wifi - Error - Error in scanned wifi so error is transmitted" ~:
+            Left NoWifiAvailable ~=? unsafeElect (Left NoWifiAvailable) (Right ["some-wifi-alone"])
+           ,"Elect wifi - Error - Error in known wifi list so error is transmitted  " ~:
+            Left KnownWifiError ~=? unsafeElect (Right ["wifi0"]) (Left KnownWifiError)
+           ]
 
-testElectWifi1, testElectWifis :: Test.HUnit.Test
-testElectWifi1 = Right "some-wifi-alone" ~=? unsafeElect (Right ["some-wifi-alone", "wifi2", "wifi3"])
-                                                         (Right ["some-wifi-alone","known1", "known2"])
-testElectWifi2 = Left NoWifiAvailable ~=? unsafeElect (Right []) (Right ["some-wifi-alone","known1", "known2"])
-testElectWifi3 = Left NoWifiAvailable ~=? unsafeElect (Right ["wifi0"]) (Right ["some-wifi-alone"])
-testElectWifi4 = Left NoWifiAvailable ~=? unsafeElect (Left NoWifiAvailable) (Right ["some-wifi-alone"])
-testElectWifi5 = Left KnownWifiError ~=? unsafeElect (Right ["wifi0"]) (Left KnownWifiError)
-testElectWifis = TestList ["testElectWifi1" ~: testElectWifi1
-                          ,"testElectWifi2" ~: testElectWifi2
-                          ,"testElectWifi3" ~: testElectWifi3
-                          ,"testElectWifi4" ~: testElectWifi4
-                          ,"testElectWifi5" ~: testElectWifi5
-                          ]
-
-testRun0, testRun1, testRuns :: Test.HUnit.Test
-testRun0 = TestCase $ run "" >>= assertEqual "Bad command - empty command" (Left $ BadCommand "")
-testRun1 = TestCase $ run "ls -" >>= assertEqual "Bad command - incorrect command" (Left $ BadCommand "ls -")
-testRun2 = TestCase $ run "echo 'tatooine':75\n'myrkr':90" >>= assertEqual "Retrieve output from the command" (Right ["'tatooine':75","'myrkr':90"])
-testRuns = TestList [ "testRun0" ~: testRun0
-                    , "testRun1" ~: testRun1
-                    , "testRun2" ~: testRun2
+testRuns :: Test.HUnit.Test
+testRuns = TestList [ "run - Bad command - Empty command" ~:
+                      TestCase $ run "" >>= assertEqual "Bad command - empty command" (Left $ BadCommand "")
+                    , "run - Bad command - The command is badly formatted, which renders an error" ~:
+                      TestCase $ run "ls -" >>= assertEqual "Bad command - incorrect command" (Left $ BadCommand "ls -")
+                    , "run - Ok - retrieve the command's output result as a [String]" ~:
+                      TestCase $ run "echo 'tatooine':75\n'myrkr':90" >>= assertEqual "Retrieve output from the command" (Right ["'tatooine':75","'myrkr':90"])
                     ]
 
-testFormatMsg0, testFormatMsgs :: Test.HUnit.Test
-testFormatMsg0 = ["No known wifi available!"] ~=? formatMsg "" id (Left NoWifiAvailable)
-testFormatMsg1 = [ "prefix string: "
-                 , "- input 0"
-                 , "- input 1"] ~=? formatMsg "prefix string: " ("- " ++) (Right ["input 0", "input 1"])
-testFormatMsgs = TestList [ "testFormatMsg0" ~: testFormatMsg0
-                          , "testFormatMsg1" ~: testFormatMsg1
+testFormatMsgs :: Test.HUnit.Test
+testFormatMsgs =
+  TestList [ "testFormatMsg0" ~: ["No known wifi available!"] ~=? formatMsg "" id (Left NoWifiAvailable)
+           , "testFormatMsg1" ~: [ "prefix string: "
+                                 , "- input 0"
+                                 , "- input 1"] ~=? formatMsg "prefix string: " ("- " ++) (Right ["input 0", "input 1"])
+           ]
+
+testSplits :: Test.HUnit.Test
+testSplits =
+  TestList [ "testSplit0" ~: split "\r\n" "a\r\nb\r\nd\r\ne" ~=? ["a","b","d","e"]
+           , "testSplit1" ~: split "aaa"  "aaaXaaaXaaaXaaa"  ~=? ["","X","X","X",""]
+           , "testSplit2" ~: split "x"    "x"                ~=? ["",""]
+           ]
+
+testAvailableWifiWithLogs :: Test.HUnit.Test
+testAvailableWifiWithLogs = TestList [ "Retrieve the available wifi list." ~: do
+                               (value, log) <- availableWifisWithLogs (Scan "echo 'tatooine':98\n'myrkr':100\n'arrakis':50")
+                               assertEqual "Log should be"   ["Scanned wifi: \n","- myrkr","- tatooine","- arrakis"] log
+                               assertEqual "Value should be" (Right ["myrkr","tatooine","arrakis"]) value
+                               return ()
+                          , "A bad command is executed and caught then sent back" ~: do
+                               (value, log) <- availableWifisWithLogs (Scan "bad-command")
+                               assertEqual "Log should be"   ["'bad-command' is not a valid command."] log
+                               assertEqual "Value should be" (Left $ BadCommand "bad-command") value
+                               return ()
                           ]
 
-testSplit0, testSplit1, testSplit2, testSplits :: Test.HUnit.Test
-testSplit0 = split "\r\n" "a\r\nb\r\nd\r\ne" ~=? ["a","b","d","e"]
-testSplit1 = split "aaa"  "aaaXaaaXaaaXaaa"  ~=? ["","X","X","X",""]
-testSplit2 = split "x"    "x"                ~=? ["",""]
+testAlreadyKnownWifiWithLogs :: Test.HUnit.Test
+testAlreadyKnownWifiWithLogs = TestList [ "Retrieve the already known wifi." ~: do
+                                  (value, log) <- alreadyUsedWifisWithLogs (Scan "echo tatooine\nmyrkr\narrakis")
+                                  assertEqual "Log should be" ["\nAuto-connect wifi: \n","- tatooine","- myrkr","- arrakis"] log
+                                  assertEqual "value should be" (Right ["tatooine", "myrkr","arrakis"]) value
+                                  return ()
+                             , "A bad command is executed and caught then sent back" ~: do
+                                  (value, log) <- alreadyUsedWifisWithLogs (Scan "bad-command")
+                                  assertEqual "Log should be"   ["'bad-command' is not a valid command."] log
+                                  assertEqual "value should be" (Left $ BadCommand "bad-command") value
+                                  return ()
+                                  ]
 
-testSplits = TestList [ "testSplit0" ~: testSplit0
-                      , "testSplit1" ~: testSplit1
-                      , "testSplit2" ~: testSplit2]
+testConnectWifiWithLogs :: Test.HUnit.Test
+testConnectWifiWithLogs = TestList [ "Error is transmitted" ~: do
+                                 (value, log) <- connectWifiWithLogs (Scan "not-used-command") (Left $ BadCommand "echo")
+                                 assertEqual "Log should be" [] log
+                                 assertEqual "value should be" (Left $ BadCommand "echo") value
+                                 return ()
+                            , "A wifi is provided and the connection should be ok" ~: do
+                                 (value, log) <- connectWifiWithLogs (Connect ("echo connection " ++)) (Right "wifi-ssid")
+                                 assertEqual "Log should be" ["\nConnection to wifi 'wifi-ssid'","connection wifi-ssid"] log
+                                 assertEqual "value should be" (Right ["connection wifi-ssid"]) value
+                                 return ()
+                            , "Bad command is provided. This should break." ~: do
+                                 (value, log) <- connectWifiWithLogs (Connect ("bad-command " ++)) (Right "wifi-ssid")
+                                 assertEqual "Log should be" ["'bad-command wifi-ssid' is not a valid command."] log
+                                 assertEqual "value should be" (Left $ BadCommand "bad-command wifi-ssid") value
+                                 return ()
+                            ]
+testAvailables :: Test.HUnit.Test
+testAvailables = TestList [ "Retrieve the available wifi list." ~: do
+                               value <- availableWifis (Scan "echo 'tatooine':57\n'myrkr':40\n'arrakis':90")
+                               assertEqual "Value should be" (Right ["arrakis","tatooine","myrkr"]) value
+                               return ()
+                          , "A bad command is executed and caught then sent back" ~: do
+                               value <- availableWifis (Scan "bad-command")
+                               assertEqual "Value should be" (Left $ BadCommand "bad-command") value
+                               return ()
+                          ]
 
--- Not working yet!
--- testAvailable0, testAvailables :: Test.HUnit.Test
--- testAvailable0 = runWifiMonad $ available (Scan "echo 'tatooine':75\n'myrkr':90") >>=
---                     \ (value, log) ->
---                       assertEqual "Log should be"   ["Scanned wifi: \n","- tatooine","- myrkr"] log
---                       assertEqual "value should be" (Right ["tatooine","myrkr"]) value
+testAlreadyKnowns :: Test.HUnit.Test
+testAlreadyKnowns = TestList [ "Retrieve the already known wifi." ~: do
+                                  value <- alreadyUsedWifis (Scan "echo myrkr\ntatooine\narrakis")
+                                  assertEqual "value should be" (Right ["myrkr", "tatooine","arrakis"]) value
+                                  return ()
+                             , "A bad command is executed and caught then sent back" ~: do
+                                  value <- alreadyUsedWifis (Scan "bad-command")
+                                  assertEqual "value should be" (Left $ BadCommand "bad-command") value
+                                  return ()
+                                  ]
 
--- testAvailables = TestList [ "testAvailable0" ~: testAvailable0
---                           ]
+testConnectWifis :: Test.HUnit.Test
+testConnectWifis = TestList [ "Error is transmitted" ~: do
+                                 value <- connectWifi (Scan "not-used-command") (Left $ BadCommand "echo")
+                                 assertEqual "value should be" (Left $ BadCommand "echo") value
+                                 return ()
+                            , "A wifi is provided and the connection should be ok" ~: do
+                                 value <- connectWifi (Connect ("echo connection " ++)) (Right "wifi-ssid")
+                                 assertEqual "value should be" (Right ["connection wifi-ssid"]) value
+                                 return ()
+                            , "Bad command is provided. This should break." ~: do
+                                 value <- connectWifi (Connect ("bad-command " ++)) (Right "wifi-ssid")
+                                 assertEqual "value should be" (Left $ BadCommand "bad-command wifi-ssid") value
+                                 return ()
+                            ]
+
+fakeScanCommand, fakeAvailableCommand :: String -> Command
+fakeScanCommand = Scan . ("echo " ++)
+fakeAvailableCommand = Scan . ("echo " ++)
+
+fakeConnectCommand :: Command
+fakeConnectCommand = Connect ("echo " ++)
+
+testScans :: Test.HUnit.Test
+testScans = TestList [ "Ok - wifi elected - Only 'tatooine' is known so elected" ~: do
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "'tatooine':98\n'myrkr':100\n'arrakis':50")
+                                                                         (fakeAvailableCommand "tatooine")
+                                                                         fakeConnectCommand
+                         return ()
+                     , "Ok - wifi elected - Most powerful signal wifi 'myrkr' is elected" ~: do
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "'tatooine':90\n'myrkr':99\n'arrakis':50")
+                                                                         (fakeAvailableCommand "tatooine\nmyrkr")
+                                                                         fakeConnectCommand
+                         return ()
+                     , "Ok - No wifi elected - No scanned wifi" ~: do
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "")
+                                                                         (fakeAvailableCommand "tatooine")
+                                                                         fakeConnectCommand
+                         return ()
+                     , "Ok - No wifi elected - No known wifi" ~: do
+                         scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "'tatooine':90")
+                                                                         (fakeAvailableCommand "myrkr")
+                                                                         fakeConnectCommand
+                         return ()
+                     ]
 
 -- Full tests
 tests :: Test.HUnit.Test
@@ -94,7 +196,14 @@ tests = TestList [ testCommandScanWifi
                  , testRuns
                  , testFormatMsgs
                  , testSplits
-                 -- , testAvailables
+                 , testAvailables
+                 , testAlreadyKnowns
+                 , testConnectWifis
+                 , testScans
+                 , testAvailableWifiWithLogs
+                 , testAlreadyKnownWifiWithLogs
+                 , testConnectWifiWithLogs
+                 , testScans
                  ]
 
 main :: IO ()

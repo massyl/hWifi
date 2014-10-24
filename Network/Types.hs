@@ -1,11 +1,26 @@
 module Network.Types where
 
-import Control.Monad.Writer (WriterT)
-import Control.Monad.Error
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Network.Types
+-- Copyright   :  (c) Commiters
+-- License     :  The same as `nmcli` - http://manpages.ubuntu.com/manpages/maverick/man1/nmcli.1.html
+--
+-- Maintainer  :  massyl, ardumont
+-- Stability   :  experimental
+-- Portability :  unportable
+-- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
+--
+-- Definition types.
+--
+-----------------------------------------------------------------------------
+
+import           Control.Monad.Error
+import           Control.Monad.Writer (WriterT)
 
 type WifiMonad w a = WriterT w IO a
 type SSID   = String
-type Signal = String
+type Signal = Integer
 type Wifi   = (SSID, Signal)
 type Log    = String
 type Output = String

@@ -1,4 +1,9 @@
-module Network.Utils where
+module Network.Utils ( split
+                     , run
+                     , clean
+                     , formatMsg
+                     , catchIO)
+       where
 
 -----------------------------------------------------------------------------
 -- |
@@ -8,21 +13,21 @@ module Network.Utils where
 --
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
--- Portability :  portable
+-- Portability :  unportable
 -- Dependency  :
 --
 -- Utility functions module
 --
 -----------------------------------------------------------------------------
 
-import qualified Data.Text as T
-import System.Process (readProcess)
-import Data.List (delete, isPrefixOf)
-import Data.Functor((<$>))
-import Control.Exception (catch, SomeException(..))
-import Control.Monad.Trans (MonadIO, liftIO)
-import System.IO(stderr, hFlush, hPrint)
-import Network.Types (ThrowsError, CommandError(..))
+import           Control.Exception   (SomeException (..), catch)
+import           Control.Monad.Trans (MonadIO, liftIO)
+import           Data.Functor        ((<$>))
+import           Data.List           (delete, isPrefixOf)
+import qualified Data.Text           as T
+import           Network.Types       (CommandError (..), ThrowsError)
+import           System.IO           (hFlush, hPrint, stderr)
+import           System.Process      (readProcess)
 
 -- | Split string s on `sep` string
 split :: String -> String -> [String]
