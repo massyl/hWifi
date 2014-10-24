@@ -1,9 +1,11 @@
+WIFI_SSID=AndroidAP-tony
+
 pr:
 	hub pull-request -b lambdatree:master
 
 install:
 	uname -a
-	sudo apt-get install -y haskell-platform
+	sudo apt-get install -y haskell-platform network-manager checkbox
 	cabal --version
 	cabal update &&	cabal install cabal-install
 
@@ -33,3 +35,6 @@ build:
 
 run-nix-shell:
 	nix-shell --pure hwifi.nix
+
+clean-wifi:
+	nmcli con delete id $(WIFI_SSID)

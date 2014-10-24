@@ -24,6 +24,8 @@ type Signal = Integer
 type Wifi   = (SSID, Signal)
 type Log    = String
 type Output = String
+type Psk    = String
+type WifiSecurity = String
 
 -- | A CLI command to connect or scan wifi
 type CLICommand = String
@@ -31,10 +33,12 @@ type CLICommand = String
 -- | A command is either to scan wifi or to connect to one.
 data Command = Scan { scan :: CLICommand }
              | Connect { connect :: SSID -> CLICommand }
+             | Create { create :: SSID -> WifiSecurity -> Psk -> CLICommand }
 
 instance Show Command where
   show (Scan _)    = "Scan wifi"
   show (Connect _) = "Connect to an elected Wifi..."
+  show (Create _)  = "Create a new wifi entry..."
 
 -- ####### Error
 
@@ -43,6 +47,8 @@ data CommandError = BadCommand String
                   | ScanWifiError
                   | KnownWifiError
                   | ConnectionError String
+                  | ConnectionCreationError String
+                  | EmptySSID String
                   | Default String
                   deriving Eq
 
@@ -52,6 +58,8 @@ instance Show CommandError where
   show KnownWifiError             = "List known wifi error."
   show (BadCommand cmd)           = "'" ++ cmd ++ "' is not a valid command."
   show (ConnectionError wifiSSID) = "Error during connection to '" ++ wifiSSID ++ "'."
+  show (ConnectionCreationError wifiSSID) = "Error during wifi creation connection to '" ++ wifiSSID ++ "'."
+  show (EmptySSID wifiSSID)       = "Empty SSID '" ++ wifiSSID ++ "'."
   show (Default msg)              = msg
 
 instance Error CommandError where

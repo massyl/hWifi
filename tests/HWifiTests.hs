@@ -1,23 +1,16 @@
 module Main where
 
-import Test.HUnit
-import Network.Types ( Command(..)
-                     , CommandError(..))
-import Network.HWifi ( unsafeElect)
-import Network.Nmcli ( scanCmd
-                     , conCmd
-                     , knownCmd)
-import Network.Utils ( run
-                     , clean
-                     , formatMsg
-                     , split)
-import Network.StandardPolicy ( scanAndConnectToKnownWifiWithMostPowerfulSignal
-                              , availableWifisWithLogs
-                              , alreadyUsedWifisWithLogs
-                              , connectWifiWithLogs
-                              , availableWifis
-                              , alreadyUsedWifis
-                              , connectWifi)
+import           Network.HWifi          (createNewWifi, unsafeElect)
+import           Network.Nmcli          (conCmd, createCmd, knownCmd, scanCmd)
+import           Network.StandardPolicy (alreadyUsedWifis,
+                                         alreadyUsedWifisWithLogs,
+                                         availableWifis, availableWifisWithLogs,
+                                         connectWifi, connectWifiWithLogs,
+                                         createNewWifiConnectionAndConnect,
+                                         createWifiWithLogs, scanAndConnectToKnownWifiWithMostPowerfulSignal)
+import           Network.Types          (Command (..), CommandError (..))
+import           Network.Utils          (clean, formatMsg, run, split)
+import           Test.HUnit
 
 testCommandScanWifi, testKnownCommand :: Test.HUnit.Test
 testCommandScanWifi = "Nmcli - Scan command"            ~: "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
@@ -37,6 +30,10 @@ testConnectToWifiCommands =
   TestList [ "Nmcli - test connect to wifi command - with wifi" ~: "sudo nmcli con up id tatooine" ~=? connect conCmd "tatooine"
            , "Nmcli - test connect to wifi command - empty"     ~: "sudo nmcli con up id "         ~=? connect conCmd []
            ]
+
+testCreateWifiCommands :: Test.HUnit.Test
+testCreateWifiCommands =
+  TestList [ "Checkbox" ~: "sudo /usr/share/checkbox/scripts/create_connection wifi -S wpa -K some-pass myrkr" ~=? create createCmd "myrkr" "wpa" "some-pass"]
 
 testElectWifis :: Test.HUnit.Test
 testElectWifis =
@@ -119,6 +116,26 @@ testConnectWifiWithLogs = TestList [ "Error is transmitted" ~: do
                                  assertEqual "value should be" (Left $ BadCommand "bad-command wifi-ssid") value
                                  return ()
                             ]
+
+testCreateWifiWithLogs :: Test.HUnit.Test
+testCreateWifiWithLogs =
+  TestList [ "A wifi is empty, so this should stop." ~: do
+             (value, log) <- createWifiWithLogs createCmd "" "wifi-security" "psk"
+             assertEqual "Log should be" [] log
+             assertEqual "value should be" (Left $ EmptySSID "SSID must be specified!") value
+             return ()
+           , "A wifi is empty, so this should stop." ~: do
+             (value, log) <- createWifiWithLogs fakeCreateCommand "ssid" "wpa" "psk"
+             assertEqual "Log should be" ["\nCreation of the wifi connection 'ssid' and connection","ssid"] log
+             assertEqual "value should be" (Right ["ssid"]) value
+             return ()
+           , "Bad command is provided. This should break." ~: do
+             (value, log) <- createWifiWithLogs (fakeScanCommand "ssid") "ssid" "wpa" "psk"
+             assertEqual "Log should be" [] log
+             assertEqual "value should be" (Left $ BadCommand "Scan wifi") value
+             return ()
+           ]
+
 testAvailables :: Test.HUnit.Test
 testAvailables = TestList [ "Retrieve the available wifi list." ~: do
                                value <- availableWifis (Scan "echo 'tatooine':57\n'myrkr':40\n'arrakis':90")
@@ -163,6 +180,9 @@ fakeAvailableCommand = Scan . ("echo " ++)
 fakeConnectCommand :: Command
 fakeConnectCommand = Connect ("echo " ++)
 
+fakeCreateCommand :: Command
+fakeCreateCommand = Create (\ si _ _ -> "echo " ++ si)
+
 testScans :: Test.HUnit.Test
 testScans = TestList [ "Ok - wifi elected - Only 'tatooine' is known so elected" ~: do
                          scanAndConnectToKnownWifiWithMostPowerfulSignal (fakeScanCommand "'tatooine':98\n'myrkr':100\n'arrakis':50")
@@ -192,6 +212,7 @@ tests = TestList [ testCommandScanWifi
                  , testKnownCommand
                  , testCleanStrings
                  , testConnectToWifiCommands
+                 , testCreateWifiCommands
                  , testElectWifis
                  , testRuns
                  , testFormatMsgs
@@ -204,6 +225,7 @@ tests = TestList [ testCommandScanWifi
                  , testAlreadyKnownWifiWithLogs
                  , testConnectWifiWithLogs
                  , testScans
+                 , testCreateWifiWithLogs
                  ]
 
 main :: IO ()

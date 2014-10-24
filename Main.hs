@@ -13,20 +13,32 @@ module Main (main
 -- Maintainer  :  massyl, ardumont
 -- Stability   :  experimental
 -- Portability :  unportable
--- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/)
+-- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/) + checkbox (System testing application)
 --
 -- A module to deal with wifi connections.
--- Determine the most powerful wifi signal amongst known auto-connect wifi and try and connect to it.
+-- 2 use cases:
+-- - Determine the most powerful wifi signal amongst known auto-connect wifis and connect to it.
+-- - If provided with (ssid, wifiSecurity {wpa or wep}, psk) in this order, this will create a new auto-connect entry and connect to it.
 --
--- Use: cabal run
+-- Use:
+-- - `cabal run` for standard auto-connect policy to known wifi
+-- - `cabal run <ssid> <wifiSecurity> <psk>` to create a new auto-connect wifi entry
 --
 -----------------------------------------------------------------------------
 
-import           Network.Nmcli          (conCmd, knownCmd, scanCmd)
+import           Network.Nmcli          (conCmd, createCmd, knownCmd, scanCmd)
 import           Network.StandardPolicy (alreadyUsedWifis, availableWifis,
+                                         createNewWifiConnectionAndConnect,
                                          electedWifi, scanAndConnectToKnownWifiWithMostPowerfulSignal)
+import           System.Environment
 
 -- | Main orchestrator
--- Determine the highest known wifi signal and connect to it
+-- Without argument: Determine the highest known wifi signal and connect to it
+-- With 3 arguments (ssid, wifiSecurity, psk) in this order, create a new wifi session and connect to it
 main :: IO ()
-main = scanAndConnectToKnownWifiWithMostPowerfulSignal scanCmd knownCmd conCmd
+main = do
+  args <- getArgs
+  if null args
+     then scanAndConnectToKnownWifiWithMostPowerfulSignal scanCmd knownCmd conCmd
+     else let (ssid:wifiSecurity:psk:_) = args in
+          createNewWifiConnectionAndConnect createCmd ssid wifiSecurity psk

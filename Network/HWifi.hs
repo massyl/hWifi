@@ -3,7 +3,8 @@ module Network.HWifi ( runWifiMonad
                      , available
                      , alreadyUsed
                      , connectToWifi
-                     , unsafeElect)
+                     , unsafeElect
+                     , createNewWifi)
        where
 
 -----------------------------------------------------------------------------
@@ -27,8 +28,8 @@ import           Data.Function        (on)
 import           Data.Functor         ((<$>))
 import           Data.List            (intersect, sortBy)
 import           Network.Types        (Command (..), CommandError (..), Log,
-                                       Output, SSID, ThrowsError, Wifi,
-                                       WifiMonad)
+                                       Output, Psk, SSID, ThrowsError, Wifi,
+                                       WifiMonad, WifiSecurity)
 import           Network.Utils        (catchIO, clean, formatMsg, run)
 
 -- | Helper function, to run stack of monad transformers
@@ -54,6 +55,7 @@ available (Scan cmd)  = runWithLog wifis logMsg
                               wifis = parseOutput <$> run cmd `catchIO` Left ScanWifiError
                               logMsg :: ThrowsError [SSID] -> [Log]
                               logMsg = formatMsg "Scanned wifi: \n" ("- "++)
+available c = (return . Left . BadCommand . show) c
 
 -- | Returns already used wifis and reports any logged info.
 alreadyUsed :: Command -> WifiMonad [Log](ThrowsError [SSID])
@@ -61,6 +63,7 @@ alreadyUsed (Scan cmd)  = runWithLog wifis logMsg
                           where parseOutput = id
                                 wifis = parseOutput <$> run cmd `catchIO` Left KnownWifiError
                                 logMsg = formatMsg "\nAuto-connect wifi: \n" ("- "++)
+alreadyUsed c = (return . Left . BadCommand . show) c
 
 -- | Connect to wifi
 connectToWifi :: Command -> ThrowsError SSID -> WifiMonad [Log](ThrowsError [SSID])
@@ -70,6 +73,17 @@ connectToWifi (Connect connectFn) (Right ssid) =
   where parseOutput = id
         wifis = parseOutput <$> run (connectFn ssid) `catchIO` (Left $ ConnectionError ssid)
         logMsg = formatMsg ("\nConnection to wifi '" ++ ssid ++ "'") id
+connectToWifi c _ = (return . Left . BadCommand . show) c
+
+-- | Create a new wifi and connect to it
+createNewWifi :: Command -> SSID -> WifiSecurity -> Psk -> WifiMonad [Log](ThrowsError [SSID])
+createNewWifi _ [] _ _ = (return . Left . EmptySSID) "SSID must be specified!"
+createNewWifi (Create createFn) ssid wifiSecurity psk =
+  runWithLog wifis logMsg
+  where parseOutput = id
+        wifis = parseOutput <$> run (createFn ssid wifiSecurity psk) `catchIO` (Left $ ConnectionCreationError ssid)
+        logMsg = formatMsg ("\nCreation of the wifi connection '" ++ ssid ++ "' and connection") id
+createNewWifi c _ _ _ = (return . Left . BadCommand . show) c
 
 -- | Elects wifi according to signal's power joined to a list of auto connect ones
 -- | This function throws an exception if you give an empty `wifis` parameter
