@@ -3,23 +3,22 @@ WIFI_SSID=AndroidAP-tony
 pr:
 	hub pull-request -b lambdatree:master
 
-install:
+check-env:
 	uname -a
-	sudo apt-get update
-	sudo apt-get install -y haskell-platform network-manager checkbox
-	cabal --version
-	cabal update &&	cabal install cabal-install
+	lsb_release -a
 
-deps:
-	ghc --version
-	cabal --version
-	cabal install base process mtl QuickCheck HUnit text
+prepare-nix:
+	sudo mkdir /nix
+	sudo chown travis: /nix
+	sudo apt-get install -y libwww-curl-perl libdbd-sqlite3-perl
 
-sandbox-init:
-	cabal sandbox init
+install-nix: check-env prepare-nix
+	wget http://hydra.nixos.org/build/10272830/download/1/nix_1.7-1_amd64.deb -O /tmp/nix_1.7-1_amd64.deb
+	sudo dpkg -i /tmp/nix_1.7-1_amd64.deb
+	# nix-channel --add http://nixos.org/channels/nixpkgs-unstable
+	# nix-channel --update
 
-sandbox-delete:
-	cabal sandbox delete
+install: install-nix run-nix-shell
 
 cabal-init:
 	cabal init
