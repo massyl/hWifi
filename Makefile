@@ -13,10 +13,13 @@ prepare-nix:
 	sudo apt-get install -y libwww-curl-perl libdbd-sqlite3-perl
 
 install-nix: check-env prepare-nix
-	wget http://hydra.nixos.org/build/10272830/download/1/nix_1.7-1_amd64.deb -O /tmp/nix_1.7-1_amd64.deb
-	sudo dpkg -i /tmp/nix_1.7-1_amd64.deb
+	curl https://nixos.org/nix/install | sh
+	sudo find / -type f -name "nix-env"
+	# wget http://hydra.nixos.org/build/10272830/download/1/nix_1.7-1_amd64.deb -O /tmp/nix_1.7-1_amd64.deb
+	# sudo dpkg -i /tmp/nix_1.7-1_amd64.deb
 	# nix-channel --add http://nixos.org/channels/nixpkgs-unstable
 	# nix-channel --update
+	. $(HOME)/.profile
 
 install: install-nix run-nix-shell
 
