@@ -8,7 +8,7 @@ check-env:
 	lsb_release -a
 
 install:
-	./.install-platform.sh
+	./install-platform.sh
 
 cabal-init:
 	cabal init
