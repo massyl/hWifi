@@ -13,17 +13,26 @@ install:
 cabal-init:
 	cabal init
 
+build:
+	cabal build
+
 run:
-	./sandbox-run.sh run
+	cabal run
 
 test:
-	./sandbox-run.sh "test --show-details=always"
+	cabal test
 
 clean-wifi:
 	sudo nmcli con delete id $(WIFI_SSID)
 
-build: setup
+nix-build: setup
 	./sandbox-run.sh build
+
+nix-run:
+	./sandbox-run.sh run
+
+nix-test:
+	./sandbox-run.sh "test --show-details=always"
 
 manual-release: build
 	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/
