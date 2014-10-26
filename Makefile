@@ -20,6 +20,11 @@ install-nix: check-env prepare-nix
 	# nix-channel --add http://nixos.org/channels/nixpkgs-unstable
 	# nix-channel --update
 	. $(HOME)/.profile
+	[ -f $(HOME)/.nix-channel ] && cat $(HOME)/.nix-channel
+	[ -f $(HOME)/.nix-defexpr ] && ls -l $(HOME)/.nix-defexpr
+	[ -f $(HOME)/.nix-profile ] && ls -l $(HOME)/.nix-profile
+	/nix/store/clnpynyac3hx3a6z5lsy893p7b4rwnyf-nix-1.7/bin/nix-env -qaP | grep nix-shell
+	/nix/store/clnpynyac3hx3a6z5lsy893p7b4rwnyf-nix-1.7/bin/nix-env -i nix-shell
 
 install: install-nix run-nix-shell
 
