@@ -13,6 +13,12 @@ install:
 cabal-init:
 	cabal init
 
+init:
+	cabal update
+	# cabal sandbox init
+	# cabal install base process mtl QuickCheck HUnit text
+	cabal configure --enable-tests
+
 build:
 	cabal build
 
@@ -26,7 +32,7 @@ clean-wifi:
 	sudo nmcli con delete id $(WIFI_SSID)
 
 nix-init:
-	./sandbox-run.sh cabal update
+	./sandbox-run.sh "cabal update; cabal configure --enable-tests"
 
 nix-build:
 	./sandbox-run.sh cabal build
