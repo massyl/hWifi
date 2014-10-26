@@ -4,7 +4,7 @@
 }:
 
 let
-  inherit (haskellPackages) cabal cabalInstall HUnit QuickCheck mtl; # Haskell dependencies here
+  inherit (haskellPackages) cabal cabalInstall HUnit QuickCheck mtl text; # Haskell dependencies here
 
 in cabal.mkDerivation (self: {
   pname = "hWifi";
@@ -14,8 +14,8 @@ in cabal.mkDerivation (self: {
   isLibrary = true;
   isExecutable = true;
   buildTools = [ haskellPackages.cabalInstall networkmanager ];
-  buildDepends = with haskellPackages; [ mtl ];
-  testDepends = with haskellPackages; [ HUnit QuickCheck ];
+  buildDepends = with haskellPackages; [ mtl text ];
+  testDepends = with haskellPackages; [ HUnit QuickCheck text ];
   meta = {
     homepage = "https://github.com/lambdatree/hWifi.git";
     description = "Wifi connections manager in Haskell";
