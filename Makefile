@@ -14,17 +14,16 @@ cabal-init:
 	cabal init
 
 run:
-	nix-shell --pure hwifi.nix --command "cabal run"
+	./sandbox-run.sh run
 
 test:
-	nix-shell --pure hwifi.nix --command "cabal test --show-details=always"
-
-run-nix-shell:
-	nix-instantiate -I$(HOME)/.nix-defexpr/channels/nixpkgs --eval -E '<nixpkgs>'
-	# $(NIX_SHELL) -I$(HOME)/.nix-defexpr/channels/nixpkgs --pure hwifi.nix
+	./sandbox-run.sh "test --show-details=always"
 
 clean-wifi:
 	sudo nmcli con delete id $(WIFI_SSID)
+
+build: setup
+	./sandbox-run.sh build
 
 manual-release: build
 	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/

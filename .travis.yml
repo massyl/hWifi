@@ -1,4 +1,6 @@
 before_install:
   - make install
   
-script: make test
+script:
+  - . $HOME/.profile
+  - make test
