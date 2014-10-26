@@ -1,6 +1,4 @@
 before_install:
   - make install
   
-script:
-  - . $HOME/.profile
-  - make test
+script: make nix-init nix-test

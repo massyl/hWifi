@@ -25,14 +25,17 @@ test:
 clean-wifi:
 	sudo nmcli con delete id $(WIFI_SSID)
 
-nix-build: setup
-	./sandbox-run.sh build
+nix-init:
+	./sandbox-run.sh cabal update
+
+nix-build:
+	./sandbox-run.sh cabal build
 
 nix-run:
-	./sandbox-run.sh run
+	./sandbox-run.sh cabal run
 
 nix-test:
-	./sandbox-run.sh "test --show-details=always"
+	./sandbox-run.sh cabal test --show-details=always
 
 manual-release: build
 	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/

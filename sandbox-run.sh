@@ -2,4 +2,4 @@
 
 . $HOME/.profile
 
-nix-shell --pure hwifi.nix --command "cabal $*"
+nix-shell --pure hwifi.nix --command "$*"
