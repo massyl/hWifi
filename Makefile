@@ -45,3 +45,6 @@ nix-test:
 
 manual-release: build
 	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/
+
+cabal2nix:
+	cabal2nix --sha256 dummy hWifi.cabal
