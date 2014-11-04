@@ -30,19 +30,19 @@ cabal2nix:
 	cabal2nix --sha256 dummy hWifi.cabal
 
 init:
-	./sandbox-run.sh $(SANDBOX) "cabal update && cabal configure --enable-tests"
+	./run.sh $(SANDBOX) "cabal update && cabal configure --enable-tests"
 
 sandbox-init:
-	./sandbox-run.sh $(SANDBOX) "cabal sandbox init"
+	./run.sh $(SANDBOX) "cabal sandbox init"
 
 sandbox-delete:
-	./sandbox-run.sh $(SANDBOX) "cabal sandbox delete"
+	./run.sh $(SANDBOX) "cabal sandbox delete"
 
 build:
-	./sandbox-run.sh $(SANDBOX) "cabal build"
+	./run.sh $(SANDBOX) "cabal build"
 
 run:
-	./sandbox-run.sh $(SANDBOX) "cabal run"
+	./run.sh $(SANDBOX) "cabal run"
 
 test:
-	./sandbox-run.sh $(SANDBOX) "cabal test --show-details=always"
+	./run.sh $(SANDBOX) "cabal test --show-details=always"
