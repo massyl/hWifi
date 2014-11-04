@@ -1,4 +1,4 @@
 before_install:
   - make install
   
-script: make tests SANDBOX=y
+script: make test SANDBOX=y
