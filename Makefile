@@ -1,5 +1,8 @@
 WIFI_SSID=AndroidAP-tony
 
+env-sandbox:
+	nix-shell --pure hwifi.nix
+
 pr:
 	hub pull-request -b lambdatree:master
 
