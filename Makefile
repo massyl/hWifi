@@ -1,3 +1,7 @@
+# sandbox variable, `n` means no sandbox (by default)
+# otherwise, runs in sandbox environment (for ci or for local dev not in env-sandbox)
+SANDBOX=n
+# Default ssid to use
 WIFI_SSID=AndroidAP-tony
 
 env-sandbox:
@@ -16,38 +20,29 @@ install:
 cabal-init:
 	cabal init
 
-init:
-	cabal update
-	# cabal sandbox init
-	# cabal install base process mtl QuickCheck HUnit text
-	cabal configure --enable-tests
-
-build:
-	cabal build
-
-run:
-	cabal run
-
-test:
-	cabal test
-
 clean-wifi:
 	sudo nmcli con delete id $(WIFI_SSID)
-
-nix-init:
-	./sandbox-run.sh "cabal update; cabal configure --enable-tests"
-
-nix-build:
-	./sandbox-run.sh cabal build
-
-nix-run:
-	./sandbox-run.sh cabal run
-
-nix-test:
-	./sandbox-run.sh cabal test --show-details=always
 
 manual-release: build
 	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/
 
 cabal2nix:
 	cabal2nix --sha256 dummy hWifi.cabal
+
+init:
+	./sandbox-run.sh $(SANDBOX) "cabal update && cabal configure --enable-tests"
+
+sandbox-init:
+	./sandbox-run.sh $(SANDBOX) "cabal sandbox init"
+
+sandbox-delete:
+	./sandbox-run.sh $(SANDBOX) "cabal sandbox delete"
+
+build:
+	./sandbox-run.sh $(SANDBOX) "cabal build"
+
+run:
+	./sandbox-run.sh $(SANDBOX) "cabal run"
+
+test:
+	./sandbox-run.sh $(SANDBOX) "cabal test --show-details=always"
