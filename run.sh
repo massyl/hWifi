@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Use: $0 <haskell-commands> <empty-for-normal-run-or-non-empty-for-sandbox-run>
 
 SANDBOX=$1
