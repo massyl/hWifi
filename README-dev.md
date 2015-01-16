@@ -18,7 +18,7 @@ make install
 Bootstrap your environment.
 
 ```sh
-make sandbox-init deps
+make sandbox-init init
 ```
 
 # Build
@@ -46,7 +46,7 @@ make run
 If you are using nix package manager, you can use a dedicated sandbox environment.
 
 ```sh
-make run-nix-shell
+make env-sandbox
 ```
 
 *Note* This will use the hwifi.nix in the repository.
