@@ -1,4 +1,4 @@
 before_install:
   - make install
   
-script: make test SANDBOX=y
+script: make configure test SANDBOX=y

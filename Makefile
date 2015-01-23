@@ -38,6 +38,9 @@ sandbox-init:
 sandbox-delete:
 	./run.sh $(SANDBOX) "cabal sandbox delete"
 
+configure:
+	./run.sh $(SANDBOX) "cabal configure"
+
 build:
 	./run.sh $(SANDBOX) "cabal build"
 
