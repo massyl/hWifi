@@ -10,7 +10,7 @@ module Main (main
 -- Copyright   :  (c) Commiters
 -- License     :  The same as `nmcli` - http://manpages.ubuntu.com/manpages/maverick/man1/nmcli.1.html
 --
--- Maintainer  :  massyl, ardumont
+-- Maintainer  :  nait-mouloud massyl, antoine dumont (ardumont)
 -- Stability   :  experimental
 -- Portability :  unportable
 -- Dependency  :  nmcli (network-manager package in debian-based platform - http://www.gnome.org/projects/NetworkManager/) + checkbox (System testing application)
@@ -48,6 +48,7 @@ data Options = Options { optShowVersion   :: Bool
                        , optPsk           :: Maybe String
                        } deriving Show
 
+--TODO Make it an instance of Data.Default
 -- | Default options (auto-connect policy)
 defaultOptions :: Options
 defaultOptions = Options { optShowVersion   = False
@@ -56,7 +57,7 @@ defaultOptions = Options { optShowVersion   = False
                          , optConnectPolicy = Nothing
                          , optPsk           = Nothing
                          }
-
+--TODO use optparser
 -- | Different possible CLI options
 options :: [OptDescr (Options -> Options)]
 options =
