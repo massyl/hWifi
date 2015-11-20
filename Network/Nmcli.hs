@@ -27,7 +27,7 @@ scanCmd = Scan "nmcli --terse --fields ssid,signal dev wifi"
 
 -- | Command to list the wifi the computer can currently auto connect to
 knownCmd :: Command
-knownCmd = Scan "nmcli --terse --fields name con list"
+knownCmd = Scan "nmcli --terse --fields name con"
 
 -- | Given a wifi, execute the command to connect to a wifi (need super power :)
 conCmd :: Command
