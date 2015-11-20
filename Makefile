@@ -26,8 +26,9 @@ clean-wifi:
 manual-release: build
 	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/
 
-cabal2nix:
-	cabal2nix --sha256 dummy hWifi.cabal
+to-nix:
+	cabal2nix --shell . > hwifi.nix
+	nix-shell hwifi.nix --command 'cabal configure'
 
 init:
 	./run.sh $(SANDBOX) "cabal update && cabal configure --enable-tests"
