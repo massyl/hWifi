@@ -14,7 +14,7 @@ import           Test.HUnit
 
 testCommandScanWifi, testKnownCommand :: Test.HUnit.Test
 testCommandScanWifi = "Nmcli - Scan command"            ~: "nmcli --terse --fields ssid,signal dev wifi" ~=? scan scanCmd
-testKnownCommand    = "Nmcli - List known wifi command" ~: "nmcli --terse --fields name con list"        ~=? scan knownCmd
+testKnownCommand    = "Nmcli - List known wifi command" ~: "nmcli --terse --fields name con"             ~=? scan knownCmd
 
 testCleanStrings :: Test.HUnit.Test
 testCleanStrings =
@@ -27,13 +27,13 @@ testCleanStrings =
 
 testConnectToWifiCommands :: Test.HUnit.Test
 testConnectToWifiCommands =
-  TestList [ "Nmcli - test connect to wifi command - with wifi" ~: "sudo nmcli con up id tatooine" ~=? connect conCmd "tatooine"
-           , "Nmcli - test connect to wifi command - empty"     ~: "sudo nmcli con up id "         ~=? connect conCmd []
+  TestList [ "Nmcli - test connect to wifi command - with wifi" ~: "nmcli con up id tatooine" ~=? connect conCmd "tatooine"
+           , "Nmcli - test connect to wifi command - empty"     ~: "nmcli con up id "         ~=? connect conCmd []
            ]
 
 testCreateWifiCommands :: Test.HUnit.Test
 testCreateWifiCommands =
-  TestList [ "Checkbox" ~: "sudo nmcli dev wifi connect myrkr password some-pass" ~=? create createCmd "myrkr" "some-pass"]
+  TestList [ "Checkbox" ~: "nmcli dev wifi connect myrkr password some-pass" ~=? create createCmd "myrkr" "some-pass"]
 
 testElectWifis :: Test.HUnit.Test
 testElectWifis =
