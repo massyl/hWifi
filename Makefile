@@ -4,6 +4,8 @@ SANDBOX=n
 # Default ssid to use
 WIFI_SSID=AndroidAP-tony
 
+PROG=.stack-work/install/x86_64-linux/lts-3.4/7.10.2/bin/hWifi
+
 env-sandbox:
 	nix-shell --pure hwifi.nix
 
@@ -50,3 +52,18 @@ run:
 
 test:
 	./run.sh $(SANDBOX) "cabal test --show-details=always"
+
+stack-tests:
+	stack test
+
+stack-init:
+	stack new
+
+stack-setup:
+	stack setup
+	stack build
+
+stack-run:
+	stack exec $(PROG)
+
+.PHONY: tests
