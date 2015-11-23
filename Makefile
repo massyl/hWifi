@@ -1,11 +1,7 @@
-# sandbox variable, `n` means no sandbox (by default)
-# otherwise, runs in sandbox environment (for ci or for local dev not in env-sandbox)
-SANDBOX=n
 # Default ssid to use
 WIFI_SSID=AndroidAP-tony
-
-env-sandbox:
-	nix-shell --pure hwifi.nix
+# hwifi deployed by stack
+PROG=.stack-work/install/x86_64-linux/lts-3.4/7.10.2/bin/hWifi
 
 pr:
 	hub pull-request -b lambdatree:master
@@ -14,38 +10,25 @@ check-env:
 	uname -a
 	lsb_release -a
 
-install:
-	./install-platform.sh
-
-cabal-init:
-	cabal init
-
 clean-wifi:
 	sudo nmcli con delete id $(WIFI_SSID)
 
-manual-release: build
-	cp ./dist/build/hWifi/hWifi ~/.cabal/bin/
-
-cabal2nix:
-	cabal2nix --sha256 dummy hWifi.cabal
+install:
+	stack install
 
 init:
-	./run.sh $(SANDBOX) "cabal update && cabal configure --enable-tests"
+	stack init
 
-sandbox-init:
-	./run.sh $(SANDBOX) "cabal sandbox init"
-
-sandbox-delete:
-	./run.sh $(SANDBOX) "cabal sandbox delete"
-
-configure:
-	./run.sh $(SANDBOX) "cabal configure"
+setup:
+	stack setup
 
 build:
-	./run.sh $(SANDBOX) "cabal build"
-
-run:
-	./run.sh $(SANDBOX) "cabal run"
+	stack build
 
 test:
-	./run.sh $(SANDBOX) "cabal test --show-details=always"
+	stack test
+
+run:
+	stack exec $(PROG)
+
+.PHONY: test
